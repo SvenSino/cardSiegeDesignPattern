@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Gradle
+.gradle/
+**/build/
+
+# Java / Kotlin
+*.class
+out/
+
+# IDEs (IntelliJ / Android Studio)
+.idea/
+*.iml
+
+# Eclipse (optional)
+.project
+.classpath
+.settings/
+
+# VS Code (optional)
+.vscode/
+
+# Logs
+*.log
