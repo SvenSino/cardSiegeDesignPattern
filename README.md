@@ -19,6 +19,7 @@
 - [Gegner](#gegner)
 - [Spielphasen](#spielphasen)
 - [Design-Pattern-Architektur](#design-pattern-architektur)
+- [Paketstruktur](#paketstruktur)
 - [Steuerung](#steuerung)
 - [Technologien](#technologien)
 - [Setup & Installation](#setup--installation)
@@ -182,6 +183,86 @@ tower.getAttackStrategy().attack(tower)  [Strategy: Ziel + Angriffsmodus]
     ├── TargetingStrategy.selectTarget() [Strategy: ClosestToGoal / HighestHP]
     └── target.takeDamage(getDamage())   [Decorator: delegiert durch alle Hüllen]
 ```
+
+---
+
+## Paketstruktur
+
+```
+core/src/main/java/td/core/
+│
+├── MainGame.java                        # libGDX-Einstiegspunkt, Screen-Verwaltung
+│
+├── ui/                                  # Darstellung & Eingabe
+│   ├── GameScreen.java                  # Hauptspielansicht, Rendering, Input-Handler
+│   └── MenuScreen.java                  # Hauptmenü
+│
+└── model/                               # Spiellogik (keine libGDX-Abhängigkeiten)
+    │
+    ├── game/                            # Zentrales Spielsystem
+    │   ├── GameManager.java             # Singleton – koordiniert alle Subsysteme
+    │   ├── WaveSpawner.java             # Gegnerwellen-Steuerung (Prototype)
+    │   └── Projectile.java              # Visuelles Projektil-Objekt
+    │
+    ├── phases/                          # Spielphasenzyklus (State Pattern)
+    │   ├── GamePhase.java               # Interface: enter(), update(), getName()
+    │   ├── DrawPhase.java               # Karten ziehen, Energie reset → PlayPhase
+    │   ├── PlayPhase.java               # Wartet auf Nutzerinteraktion
+    │   ├── WavePhase.java               # Gegner spawnen, Welle überwachen
+    │   ├── ResolvePhase.java            # 0.8s Delay → DrawPhase
+    │   └── GameOverPhase.java           # Endzustand (Sieg oder Niederlage)
+    │
+    ├── cards/                           # Kartensystem (Command + Factory + Prototype)
+    │   ├── Card.java                    # Abstrakte Basisklasse: execute(), copy()
+    │   ├── CardContext.java             # Receiver-Zugang für Karten → GameManager
+    │   ├── CardFactory.java             # Interface: createDeck()
+    │   ├── StrategyCardFactory.java     # Konkrete Factory: 10 Kartentypen konfiguriert
+    │   ├── Deck.java                    # Stapel-Verwaltung, klont Prototypen per copy()
+    │   ├── Hand.java                    # Handkarten des Spielers
+    │   ├── BuildTowerCard.java          # → queueTowerPlacement() (Builder)
+    │   ├── DamageBuffCard.java          # → applyDamageBuff() (Decorator)
+    │   ├── RangeBuffCard.java           # → queueRangeBuff() (Decorator)
+    │   ├── FreezeCard.java              # → slowAllEnemies()
+    │   ├── EnergyCard.java              # → addEnergy()
+    │   ├── GoldCard.java                # → addGold()
+    │   ├── DrawCard.java                # → drawHand()
+    │   └── DiscountCard.java            # → addNextCardDiscount()
+    │
+    ├── towers/                          # Turmsystem (Decorator + Strategy + Builder)
+    │   ├── TowerComponent.java          # Interface: getDamage(), getRange(), ...
+    │   ├── BaseTower.java               # Kern-Implementierung (Produkt des Builders)
+    │   ├── TowerDecorator.java          # Abstrakte Decorator-Basisklasse, delegiert alles
+    │   ├── DamageBuffDecorator.java     # überschreibt getDamage() + bonusDamage
+    │   ├── RangeBuffDecorator.java      # überschreibt getRange() + bonusRange
+    │   ├── UpgradeDecorator.java        # überschreibt Damage, Range, Cooldown, Level
+    │   ├── TowerDecoratorFactory.java   # Funktionales Interface: TowerComponent → TowerComponent
+    │   ├── PendingTower.java            # Builder: hält Konfiguration, erzeugt via build(x,y)
+    │   ├── TowerType.java               # Enum: SCOUT, SNIPER, RAPID
+    │   ├── TargetingStrategy.java       # Interface: selectTarget()
+    │   ├── AttackStrategy.java          # Interface: attack()
+    │   ├── ClosestToGoalStrategy.java   # Ziel: höchster pathIndex
+    │   ├── HighestHpStrategy.java       # Ziel: meiste Lebenspunkte
+    │   ├── SingleTargetAttackStrategy.java  # Angriff: ein Gegner, voller Schaden
+    │   └── SplashAttackStrategy.java    # Angriff: Primärziel + Umkreisschaden
+    │
+    ├── enemies/                         # Gegnersystem (Prototype)
+    │   ├── Enemy.java                   # Bewegungslogik, HP, Slow-Effekt
+    │   ├── EnemyPrototype.java          # Konfigurationsvorlage: copy(path) → Enemy
+    │   └── EnemyType.java               # Enum: STANDARD, FAST, TANK
+    │
+    ├── events/                          # Ereignissystem (Observer Pattern)
+    │   ├── GameEventBus.java            # Subject: subscribe(), publish()
+    │   ├── GameEventListener.java       # Observer-Interface: onEvent()
+    │   ├── GameEvent.java               # Wertobjekt mit Factory-Methoden
+    │   └── GameEventLogger.java         # Konkreter Observer: Konsolen-Logging
+    │
+    └── board/                           # Spielfeld
+        ├── Board.java                   # 20×20-Raster, Pfad-Liste, buildable-Prüfung
+        ├── Tile.java                    # Einzelne Kachel: Koordinaten, path-Flag
+        └── BoardComponent.java          # Interface: getX(), getY()
+```
+
+**Abhängigkeitsrichtung:** `ui` → `model/game` → alle anderen `model`-Pakete. Die Pakete `phases`, `cards`, `towers`, `enemies`, `events` und `board` haben keine Abhängigkeiten untereinander – sie kennen nur `GameManager` über Methodenparameter.
 
 ---
 
