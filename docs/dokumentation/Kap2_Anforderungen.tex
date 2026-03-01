@@ -3,12 +3,51 @@
 % =============================================================================
 \section{Anforderungen und Pattern-Auswahl}
 
-Das Spiel erfüllt alle funktionalen Anforderungen: drei Turmtypen (Scout, Sniper,
-Rapid), drei Gegnertypen (Standard, Fast, Tank) mit unterschiedlichen
-Geschwindigkeiten und Trefferpunkten, ein vollständiger Rundenzyklus mit vier
-Phasen sowie zehn verschiedene Kartentypen für Bau, Buffs und Sonderaktionen.
-Grafisch dargestellt wird das Spiel über libGDX mit Spielfeld, HUD und
-Kartenhand. Nicht-funktional wurde auf Modularität und Erweiterbarkeit geachtet:
+\subsection{Funktionale Anforderungen}
+
+Die folgende Tabelle listet die zentralen funktionalen Anforderungen des Projekts
+und dokumentiert deren Umsetzung im entwickelten Spiel.
+
+\begin{longtable}{p{1cm} p{3cm} p{5cm} p{4.5cm}}
+    \toprule
+    \textbf{Nr.} & \textbf{Anforderung} & \textbf{Beschreibung} & \textbf{Umsetzung} \\
+    \midrule
+    \endhead
+    F1 & Spielfeld &
+        Das Spiel besitzt ein 2D-Raster mit unterschied\-lichen Feldtypen. &
+        20×20-Rasterfeld (\texttt{Board}); Felder sind entweder Pfad (\texttt{path=true})
+        oder bebaubare Fläche (\texttt{path=false}). \\
+    \addlinespace
+    F2 & Einheiten &
+        Verschiedene Einheitentypen mit unterschiedlichen Fähigkeiten. &
+        Drei Gegnertypen (Standard, Fast, Tank) und drei Turmtypen (Scout, Sniper, Rapid)
+        mit individuellen Attributen und Strategien. \\
+    \addlinespace
+    F3 & Rundenlogik &
+        Spieler führen abwechselnd Züge aus; nach jeder Runde werden Ereignisse
+        ausgewertet. &
+        Vier Phasen (Draw, Play, Wave, Resolve) über das State Pattern gesteuert. \\
+    \addlinespace
+    F4 & Aktionen &
+        Mindestens drei Aktionen: Bewegen, Angreifen, Spezialfähigkeit oder Bauen. &
+        Turmbau (BuildTowerCard), Angriff (automatisch per AttackStrategy), Buffs
+        (DamageBuffCard, RangeBuffCard, FreezeCard), Ressourcen (EnergyCard, GoldCard). \\
+    \addlinespace
+    F5 & Siegbedingung &
+        Das Spiel endet, wenn ein Spieler alle gegnerischen Einheiten besiegt oder
+        ein bestimmtes Ziel erreicht. &
+        Sieg nach 12 abgewehrten Wellen; Niederlage wenn Basislebenspunkte $\leq 0$. \\
+    \addlinespace
+    F6 & Benutzeroberfläche &
+        Einfache grafische oder textuelle Darstellung des Spielfelds. &
+        libGDX-basierte 2D-Grafik mit Spielfeld, HUD-Panel, Kartenhand und
+        Platzierungsvorschau. \\
+    \bottomrule
+    \caption{Funktionale Anforderungen und deren Umsetzung}
+    \label{tab:fa}
+\end{longtable}
+
+Nicht-funktional wurde auf Modularität und Erweiterbarkeit geachtet:
 Abhängigkeiten verlaufen über Interfaces, neue Karten- oder Turmtypen lassen sich
 ohne Änderung bestehenden Codes ergänzen. Das Spielsystem
 wurde in Java~21 mit libGDX umgesetzt und per Gradle gebaut;
