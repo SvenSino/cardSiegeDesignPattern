@@ -17,6 +17,8 @@ public class Board implements BoardComponent {
     private final List<Tile> tiles;
     private final List<Vector2> path;
 
+    private record GridPoint(int x, int y) {}
+
     private Board(int width, int height, float tileSize, List<Tile> tiles, List<Vector2> path) {
         this.width = width;
         this.height = height;
@@ -36,16 +38,16 @@ public class Board implements BoardComponent {
         }
 
         List<int[]> controlPoints = buildControlPoints(width, height);
-        Set<Long> uniqueTiles = new LinkedHashSet<>();
+        Set<GridPoint> uniqueTiles = new LinkedHashSet<>();
         for (int i = 0; i < controlPoints.size() - 1; i++) {
             int[] a = controlPoints.get(i);
             int[] b = controlPoints.get(i + 1);
             appendOrthogonalSegment(a[0], a[1], b[0], b[1], width, height, uniqueTiles);
         }
 
-        for (long packed : uniqueTiles) {
-            int gridX = unpackX(packed);
-            int gridY = unpackY(packed);
+        for (GridPoint point : uniqueTiles) {
+            int gridX = point.x();
+            int gridY = point.y();
             path.add(new Vector2((gridX + 0.5f) * tileSize, (gridY + 0.5f) * tileSize));
             if (gridX >= 0 && gridX < width && gridY >= 0 && gridY < height) {
                 int index = gridY * width + gridX;
@@ -80,7 +82,7 @@ public class Board implements BoardComponent {
         return points;
     }
 
-    private static void appendOrthogonalSegment(int x1, int y1, int x2, int y2, int width, int height, Set<Long> out) {
+    private static void appendOrthogonalSegment(int x1, int y1, int x2, int y2, int width, int height, Set<GridPoint> out) {
         int cx = x1;
         int cy = y1;
         appendPoint(cx, cy, width, height, out);
@@ -95,23 +97,11 @@ public class Board implements BoardComponent {
         }
     }
 
-    private static void appendPoint(int x, int y, int width, int height, Set<Long> out) {
+    private static void appendPoint(int x, int y, int width, int height, Set<GridPoint> out) {
         if (x < 0 || y < 0 || x >= width || y >= height) {
             return;
         }
-        out.add(pack(x, y));
-    }
-
-    private static long pack(int x, int y) {
-        return (((long) x) << 32) | (y & 0xffffffffL);
-    }
-
-    private static int unpackX(long packed) {
-        return (int) (packed >> 32);
-    }
-
-    private static int unpackY(long packed) {
-        return (int) packed;
+        out.add(new GridPoint(x, y));
     }
 
     private static int clamp(int value, int min, int max) {

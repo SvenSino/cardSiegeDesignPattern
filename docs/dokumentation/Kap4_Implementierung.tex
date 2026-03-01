@@ -121,8 +121,8 @@ für Bauprüfungen bereit.
 Der Pfad wird einmalig in \texttt{Board.createDefault()} erzeugt: Zwölf
 relativ zur Spielfeldgröße skalierte Kontrollpunkte werden durch
 ausschließlich horizontale und vertikale Segmente verbunden. Die resultierenden
-Gitterkoordinaten landen in einem \texttt{LinkedHashSet}, das Duplikate
-entfernt und die Reihenfolge erhält. Jede Koordinate wird als
+Gitterkoordinaten landen als \texttt{GridPoint}-Records in einem
+\texttt{LinkedHashSet}, das Duplikate entfernt und die Reihenfolge erhält. Jede Koordinate wird als
 \texttt{Tile(path=true)} markiert und als Weltkoordinate in die Pfad-Liste
 übernommen, entlang derer Gegner sich bewegen.
 
