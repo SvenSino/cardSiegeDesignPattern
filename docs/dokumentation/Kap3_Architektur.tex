@@ -205,7 +205,7 @@ public class DamageBuffDecorator extends TowerDecorator {
 \end{figure}
 
 Dekoratoren lassen sich beliebig stapeln. Ein Aufruf von \texttt{getDamage()}
-auf einem \texttt{UpgradeDecorator(DamageBuffDecorator(BaseTower))} traversiert
+auf einem \texttt{Upgrade\-Decorator(Damage\-Buff\-Decorator(Base\-Tower))} traversiert
 transparent die gesamte Kette und summiert alle Boni auf. Die restliche
 Spiellogik, Strategy und GameManager, sieht stets nur ein
 \texttt{TowerComponent} und muss nichts von der Decorator-Kette wissen.
@@ -225,8 +225,8 @@ an den Receiver.
 
 Der \texttt{GameManager} übernimmt die Receiver-Rolle. Er stellt für jede
 Spielaktion eine semantisch benannte Methode bereit:
-\texttt{applyDamageBuff()}, \texttt{queueRangeBuff()} und
-\texttt{slowAllEnemies()} kapseln die jeweilige Implementierungslogik, etwa
+\texttt{apply\-Damage\-Buff()}, \texttt{queue\-Range\-Buff()} und
+\texttt{slow\-All\-Enemies()} kapseln die jeweilige Implementierungslogik, etwa
 die Konstruktion von Decorator-Objekten oder die Iteration über die
 Gegnerliste. Die Karten wissen \textit{was} ausgelöst werden soll, der
 \texttt{GameManager} weiß \textit{wie} es intern umgesetzt wird.
@@ -245,9 +245,9 @@ public void applyDamageBuff(int bonusDamage) {
 
 Der \texttt{GameScreen} agiert als Invoker: Er ruft \texttt{playCard(index)}
 auf dem \texttt{GameManager} auf, ohne konkrete Kartentypen zu kennen.
-Die acht Kartenklassen, \texttt{DamageBuffCard}, \texttt{RangeBuffCard},
+Die acht Kartenklassen, \texttt{Damage\-Buff\-Card}, \texttt{Range\-Buff\-Card},
 \texttt{FreezeCard}, \texttt{EnergyCard}, \texttt{GoldCard}, \texttt{DrawCard},
-\texttt{DiscountCard} und \texttt{BuildTowerCard}, sind alle nach demselben
+\texttt{DiscountCard} und \texttt{Build\-Tower\-Card}, sind alle nach demselben
 Prinzip aufgebaut: ein schlankes Aktionsobjekt, ein Receiver-Aufruf.
 
 Das Command-Pattern kooperiert eng mit dem Decorator-Pattern:
@@ -291,7 +291,7 @@ zusätzliche Klasse.
 \end{figure}
 
 Das Zusammenspiel mit dem Decorator-Pattern ist besonders subtil: Wenn die
-\texttt{SplashAttackStrategy} \texttt{tower.getDamage()} aufruft, traversiert
+\texttt{Splash\-Attack\-Strategy} \texttt{tower.getDamage()} aufruft, traversiert
 dieser Aufruf transparent eine möglicherweise mehrschichtige Decorator-Kette.
 Die Strategie erhält stets den kumulierten, gebufften Schadenswert, ohne davon
 zu wissen. Die Entkopplung funktioniert vollständig über das gemeinsame Interface
@@ -312,7 +312,7 @@ nächsten Zug ein. Zwölf abgeschlossene Wellen führen zum Sieg, fehlende
 Basislebenspunkte zur Niederlage.
 
 Ohne das State-Pattern würde der \texttt{GameManager} ein wachsendes Geflecht
-aus phasenabhängigen Bedingungen verwalten: Karten dürfen nur in bestimmten
+aus phasen\-abhängigen Bedingungen verwalten: Karten dürfen nur in bestimmten
 Phasen ausgespielt werden, Gegner spawnen nur in der Wave-Phase, der nächste Zug
 beginnt erst nach Ablauf eines Timers. All dieses Verhalten in einer einzigen
 Klasse zu konzentrieren würde zu unübersichtlichen
