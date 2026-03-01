@@ -13,7 +13,7 @@ erläutert.
 % -----------------------------------------------------------------------------
 
 Der \texttt{GameManager} verwaltet als zentrales Singleton den gesamten
-Spielzustand und koordiniert alle Subsysteme. \texttt{init(board, cardFactory)}
+Spielzustand und koordiniert alle Subsysteme. Die Methode \texttt{init(board, cardFactory)}
 setzt alle Zustandsvariablen zurück, initialisiert Deck und Hand und startet mit
 Startressourcen (3 Energie, 5 Gold, 10 Basislebenspunkte) in der
 \texttt{DrawPhase}. Die Frame-Methode \texttt{update(delta)} ruft in fest
@@ -21,11 +21,11 @@ definierter Reihenfolge auf: Phasen-Update, Gegnerbewegung,
 Reichweitenüberwachung, Turm-Update, Kampfauflösung, Entitätenbereinigung und
 Projektilupdates.
 
-\texttt{playCard(index)} entfernt die gewählte Karte aus der Hand, prüft Phase
-und Energieverfügbarkeit, zieht den Energiebetrag ab und ruft
-\texttt{card.execute()} auf. \texttt{BuildTowerCard}s sind während der
-\texttt{WavePhase} gesperrt. \texttt{canPlayCard()} und
-\texttt{getEffectiveEnergyCost()} kapseln alle Voraussetzungsprüfungen
+Über \texttt{playCard(index)} wird die gewählte Karte aus der Hand entfernt,
+Phase und Energieverfügbarkeit geprüft, der Energiebetrag abgezogen und
+\texttt{card.execute()} aufgerufen. \texttt{BuildTowerCard}s sind während der
+\texttt{WavePhase} gesperrt. Die Methoden \texttt{canPlayCard()} und
+\texttt{getEffective\-Energy\-Cost()} kapseln alle Voraussetzungsprüfungen
 (Phase, Energie, Gold, vorhandene Türme für Buff-Karten) sowie die Berechnung
 aktiver Kartenrabatte.
 
@@ -33,36 +33,37 @@ aktiver Kartenrabatte.
 \subsection{Turmsystem}
 % -----------------------------------------------------------------------------
 
-\texttt{queueTowerPlacement(pending)} speichert einen \texttt{PendingTower},
+Über \texttt{queue\-Tower\-Placement(pending)} wird ein \texttt{PendingTower} gespeichert,
 sobald ausreichend Gold vorhanden ist; der \texttt{GameScreen} rendert daraufhin
-den Platzierungsmarker mit Reichweitenkreis. \texttt{tryPlacePendingTower(x, y)}
-prüft Baubarkeit des Feldes und ob es bereits belegt ist, bei Erfolg wird
+den Platzierungsmarker mit Reichweitenkreis. Die Methode \texttt{tryPlace\-Pending\-Tower(x, y)}
+prüft Baubarkeit des Feldes und ob es bereits belegt ist; bei Erfolg wird
 \texttt{PendingTower.build()} aufgerufen, der Turm zur Liste hinzugefügt und Gold
 abgezogen.
 
-\texttt{upgradeTower(tower)} umhüllt den Turm mit einem
+Die Methode \texttt{upgradeTower(tower)} umhüllt den Turm mit einem
 \texttt{UpgradeDecorator} (+1 Schaden, +15 Reichweite, reduzierter Cooldown); die
 Kosten steigen pro Level (\texttt{2 + tower.getLevel()} Gold). Globale Buffs wie
 \texttt{applyDamageBuff()} ersetzen jeden Turm in der Liste durch einen
 entsprechenden Decorator-Wrapper. Für gezielte Buffs auf einzelne Türme speichert
 \texttt{queueRangeBuff()} einen Factory-Auftrag, den
-\texttt{tryApplyPendingTowerModifier()} beim nächsten vom Spieler ausgewählten
+\texttt{tryApply\-Pending\-Tower\-Modifier()} beim nächsten vom Spieler ausgewählten
 Turm anwendet.
 
-\texttt{updateRangeObservers()} berechnet pro Turm per Quadratdistanzvergleich,
+Die Methode \texttt{update\-Range\-Observers()} berechnet pro Turm per Quadratdistanzvergleich,
 welche Gegner aktuell in Reichweite sind, und benachrichtigt den Turm über
-Eintritte und Austritte. \texttt{resolveCombat(delta)} iteriert über alle Türme:
-Bei \texttt{canFire()} wird \texttt{attackStrategy.attack()} aufgerufen, der
+Eintritte und Austritte. In \texttt{resolveCombat(delta)} wird über alle Türme
+iteriert:
+Bei \texttt{canFire()} wird \texttt{attack\-Strategy.attack()} aufgerufen, der
 Cooldown zurückgesetzt und ein visuelles Projektil erzeugt.
 
 % -----------------------------------------------------------------------------
 \subsection{Gegnersystem und Kampf}
 % -----------------------------------------------------------------------------
 
-\texttt{Enemy.update(delta)} bewegt den Gegner entlang der vorberechneten
+In \texttt{Enemy.update(delta)} bewegt sich der Gegner entlang der vorberechneten
 Wegpunkt-Liste. Der \texttt{pathIndex} steigt, sobald ein Waypoint erreicht ist;
 ein aktiver Slow-Effekt (\texttt{FreezeCard}) skaliert die Geschwindigkeit via
-\texttt{slowFactor} für eine begrenzte Dauer. \texttt{isInRange(tower)} prüft
+\texttt{slowFactor} für eine begrenzte Dauer. Die Methode \texttt{isInRange(tower)} prüft
 die Euklidische Distanz per Quadratvergleich, wobei der Turmursprung in der
 Mitte der Kachel liegt.
 
@@ -72,26 +73,26 @@ Zeitintervallen. Sind alle Gegner gespawnt und die Gegnerliste leer, löst
 \texttt{endWaveIfComplete()} den Übergang in die \texttt{ResolvePhase} oder
 nach zwölf Wellen in die \texttt{GameOverPhase(true)} aus.
 
-\texttt{cleanupEntities()} entfernt tote Gegner (+1 Gold,
+Die Methode \texttt{cleanupEntities()} entfernt tote Gegner (+1 Gold,
 \texttt{EnemyDefeated}-Event) und Gegner, die das Ziel erreicht haben
 ($-1$ Basislebenspunkt, \texttt{baseDamaged}-Event). Vor dem Entfernen werden
-alle Turm-Observer über \texttt{removeEnemyFromObservers()} benachrichtigt. Fällt
+alle Turm-Observer über \texttt{remove\-Enemy\-From\-Observers()} benachrichtigt. Fällt
 \texttt{baseHealth} auf null, wechselt das Spiel in \texttt{GameOverPhase(false)}.
 
 % -----------------------------------------------------------------------------
 \subsection{Kartensystem}
 % -----------------------------------------------------------------------------
 
-\texttt{Deck.draw()} liefert die oberste Karte; ist der Stapel leer, füllt
+Die Methode \texttt{Deck.draw()} liefert die oberste Karte; ist der Stapel leer, füllt
 \texttt{refill()} ihn über Factory und Prototype-Klonen neu auf und mischt ihn
-anschließend. \texttt{Hand} verwaltet die Handkarten als Liste;
+anschließend. Die Klasse \texttt{Hand} verwaltet die Handkarten als Liste;
 \texttt{addToFront()} wird beim Zurücklegen einer abgelehnten Karte genutzt.
 
-\texttt{ensureFirstHandHasTower()} garantiert, dass die allererste Hand des
+Die Methode \texttt{ensure\-First\-Hand\-Has\-Tower()} garantiert, dass die allererste Hand des
 Spiels mindestens eine \texttt{BuildTowerCard} enthält: Ist keine vorhanden,
 wird die erste Handkarte an den Stapelboden gelegt und der Stapel nach einer
-Turmkarte durchsucht. \texttt{addNextCardDiscount(amount)} realisiert
-Rabatt-Mechaniken der \texttt{DiscountCard}; der Rabatt wird nach dem nächsten
+Turmkarte durchsucht. Über \texttt{addNext\-Card\-Discount(amount)} werden
+Rabatt-Mechaniken der \texttt{DiscountCard} realisiert; der Rabatt wird nach dem nächsten
 Kartenspielen auf null zurückgesetzt.
 
 % -----------------------------------------------------------------------------
@@ -99,7 +100,7 @@ Kartenspielen auf null zurückgesetzt.
 % -----------------------------------------------------------------------------
 
 Der \texttt{GameEventBus} verwaltet eine Liste von
-\texttt{GameEventListener}-Implementierungen und benachrichtigt alle Subscriber
+\texttt{Game\-Event\-Listener}-Implementierungen und benachrichtigt alle Subscriber
 synchron per \texttt{publish()}. \texttt{GameEvent} ist ein einfaches Wertobjekt
 mit typisierten Factory-Methoden (\texttt{towerBuilt(x,y)},
 \texttt{phaseChanged(name)}, \texttt{baseDamaged(hp)}, \texttt{EnemyDefeated},
@@ -107,3 +108,57 @@ mit typisierten Factory-Methoden (\texttt{towerBuilt(x,y)},
 \texttt{GameEventLogger} als einziger aktiver Subscriber schreibt jedes Ereignis
 auf die Konsole; weitere Subscriber (Sound, Achievements) könnten ohne Änderung
 am Bus per \texttt{subscribe()} ergänzt werden.
+
+% -----------------------------------------------------------------------------
+\subsection{Spielfeld und Pfadgenerierung}
+% -----------------------------------------------------------------------------
+
+Die Klasse \texttt{Tile} repräsentiert eine einzelne Kachel mit Gitterkoordinaten und
+einem booleschen \texttt{path}-Flag. Die Klasse \texttt{Board} hält die Kachelliste,
+die vorberechnete Pfad-Vektorliste und stellt \texttt{isBuildable(gridX,~gridY)}
+für Bauprüfungen bereit.
+
+Der Pfad wird einmalig in \texttt{Board.createDefault()} erzeugt: Zwölf
+relativ zur Spielfeldgröße skalierte Kontrollpunkte werden durch
+ausschließlich horizontale und vertikale Segmente verbunden. Die resultierenden
+Gitterkoordinaten landen in einem \texttt{LinkedHashSet}, das Duplikate
+entfernt und die Reihenfolge erhält. Jede Koordinate wird als
+\texttt{Tile(path=true)} markiert und als Weltkoordinate in die Pfad-Liste
+übernommen, entlang derer Gegner sich bewegen.
+
+% -----------------------------------------------------------------------------
+\subsection{Projektile}
+% -----------------------------------------------------------------------------
+
+Die Klasse \texttt{Projectile} ist ein reines Darstellungsobjekt ohne Einfluss auf die
+Spiellogik. Es speichert Start- und Zielposition sowie eine
+\texttt{ttl}-Zeit von 0,15~Sekunden. Die Methode \texttt{getAlpha()} liefert einen linear
+abfallenden Transparenzwert für weiches Ausblenden; \texttt{isExpired()}
+signalisiert dem \texttt{GameManager} das Entfernen aus der Liste. Schaden und
+Trefferauswertung sind bereits in \texttt{resolveCombat()} abgeschlossen,
+bevor das Projektil erzeugt wird.
+
+% -----------------------------------------------------------------------------
+\subsection{Benutzeroberfläche und Eingabe}
+% -----------------------------------------------------------------------------
+
+Der \texttt{GameScreen} bildet die einzige Verbindung zwischen Spiellogik und
+Darstellung. Die Methode \texttt{render()} delegiert zunächst \texttt{update(delta)} an
+den \texttt{GameManager} und zeichnet danach Hintergrund, Spielfeld, Entitäten,
+Platzierungsvorschau und HUD. Türme erscheinen als farbige Rechtecke, Gegner
+als Kreise mit HP-Balken, Projektile als gelbe Linien mit \texttt{alpha}-Ausblenden.
+
+Die Methode \texttt{drawPlacementPreview()} ist aktiv, solange ein \texttt{PendingTower}
+im Manager registriert ist: Das überfahrene Feld wird grün (baubar) oder rot
+(gesperrt) eingefärbt, ein Reichweitenkreis zeigt die Abdeckung -- ohne dass
+ein echter Turm existiert. Das HUD zeigt Ressourcen und Handkarten; spielbare
+Karten werden grün, nicht spielbare rot hinterlegt. Über \texttt{collectBuffs()}
+wird die Decorator-Kette eines selektierten Turms traversiert und alle
+aktiven Boni für das Tooltip summiert.
+
+Die innere Klasse \texttt{GameInputProcessor} übernimmt die Eingabe:
+\texttt{[1--8]} spielen Karten, \texttt{SPACE} startet die Welle, \texttt{U}
+upgraded den selektierten Turm, \texttt{R} startet neu und \texttt{ESC} kehrt
+zum Menü zurück. Mausklicks werden per \texttt{camera.unproject()} in
+Gitterkoordinaten konvertiert und lösen je nach Zustand
+\texttt{tryPlace\-PendingTower()} oder \texttt{tryApply\-Pending\-Tower\-Modifier()} aus.
