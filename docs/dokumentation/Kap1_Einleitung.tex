@@ -6,18 +6,19 @@
 \subsection{Motivation}
 
 Entwurfsmuster sind bewährte Lösungsschablonen für wiederkehrende Probleme in der
-objektorientierten Softwareentwicklung. Das Standardwerk der \textit{Gang of Four}
-(Gamma et al., 1994) hat sie als gemeinsame Sprache für Architekturentscheidungen
-etabliert. Ihr eigentlicher Wert zeigt sich jedoch erst im Kontext eines realen
-Entwurfsproblems, die reine Theorie lässt ihren Nutzen oft abstrakt wirken.
+objektorientierten Softwareentwicklung. Als gemeinsame Sprache für Architektur\-entscheidungen
+haben sie sich in der Praxis fest etabliert -- ihr eigentlicher Wert zeigt sich
+jedoch erst im Kontext eines realen Entwurfsproblems. Reine Theorie lässt den
+Nutzen oft abstrakt wirken; erst wenn ein Muster ein konkretes Problem löst,
+wird seine Wirkung greifbar.
 
-Dieses Projekt setzt neun GoF-Patterns in \textbf{CardSiege} um, einem
+Dieses Projekt setzt neun Entwurfsmuster in \textbf{CardSiege} um, einem
 rundenbasierten Kartenspiel mit Tower-Defense-Mechaniken in Java und libGDX.
-Spieleentwicklung ist ein besonders geeignetes Anwendungsgebiet: Spiele verwalten
-komplexe, sich ständig ändernde Zustände, viele Objekte interagieren eng
-miteinander, und Erweiterbarkeit ist von Anfang an gefordert. Jedes eingesetzte
-Pattern löst dabei ein konkretes Architekturproblem, das sich ohne das Muster in
-Kopplung, Codeduplikation oder mangelnder Wartbarkeit niedergeschlagen hätte.
+Spieleentwicklung ist ein besonders geeignetes Anwendungsgebiet, weil Spiele
+komplexe, sich ständig ändernde Zustände verwalten, viele Objekte eng
+miteinander interagieren und Erweiterbarkeit von Anfang an gefordert ist. Jedes
+eingesetzte Muster löst dabei ein konkretes Architekturproblem, das sich ohne es
+in Kopplung, Codeduplikation oder mangelnder Wartbarkeit niedergeschlagen hätte.
 
 \subsection{Spielkonzept}
 
@@ -33,4 +34,26 @@ Energie auffüllen) $\rightarrow$ \textit{Play} (Karten ausspielen, Türme
 positionieren) $\rightarrow$ \textit{Wave} (Gegnerwelle läuft, Türme greifen
 automatisch an) $\rightarrow$ \textit{Resolve} (kurze Pause, nächster Zug
 beginnt). Das Spiel endet mit Sieg nach zwölf abgewehrten Wellen oder mit
-Niederlage, sobald die Basis auf null Lebenspunkte fällt. 
+Niederlage, sobald die Basis auf null Lebenspunkte fällt.
+
+\subsection{Technische Voraussetzungen und Projektstart}
+
+CardSiege ist als Multi-Modul-Gradle-Projekt strukturiert. Das Modul
+\texttt{core/} enthält die plattformunabhängige Spiellogik, \texttt{lwjgl3/}
+stellt den Desktop-Launcher bereit. Voraussetzung ist ein installiertes
+Java~21~JDK; eine separate Gradle-Installation ist nicht erforderlich, da der
+mitgelieferte Gradle-Wrapper alle weiteren Abhängigkeiten automatisch
+herunterlädt.
+
+\begin{lstlisting}[language=bash,caption={Build und Start \"{u}ber den Gradle-Wrapper},label=lst:build]
+# Projekt bauen
+./gradlew build
+
+# Spiel starten (Desktop)
+./gradlew lwjgl3:run
+\end{lstlisting}
+
+Unter Windows wird statt \texttt{./gradlew} der Befehl \texttt{gradlew.bat}
+verwendet. Der Einstiegspunkt ist die Klasse
+\texttt{td.lwjgl3.Lwjgl3Launcher}; das Spielfenster öffnet sich mit
+1200$\times$700~Pixeln.

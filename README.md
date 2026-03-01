@@ -294,16 +294,29 @@ core/src/main/java/td/core/
 
 ## Setup & Installation
 
-**Voraussetzungen:** Java 21+
+**Voraussetzungen:** Java 21 JDK
 
 ```bash
 # Repository klonen
 git clone <repository-url>
-cd TD-DesignPattern
+cd CardSiege
 
-# Build
+# Projekt bauen
 ./gradlew build
 
-# Spiel starten (Desktop)
+# Spiel starten
 ./gradlew lwjgl3:run
 ```
+
+Unter Windows `gradlew.bat` statt `./gradlew` verwenden.
+
+Der Gradle-Wrapper lädt alle Abhängigkeiten (libGDX, Lombok) automatisch herunter — eine separate Gradle-Installation ist nicht nötig.
+
+Das Projekt besteht aus zwei Modulen:
+
+| Modul | Inhalt |
+|---|---|
+| `core/` | Plattformunabhängige Spiellogik (Patterns, Game Loop, Karten, Türme) |
+| `lwjgl3/` | Desktop-Launcher, startet libGDX mit LWJGL3-Backend |
+
+Der Einstiegspunkt ist `td.lwjgl3.Lwjgl3Launcher`. Das Spielfenster öffnet sich mit 1200×700 Pixeln.

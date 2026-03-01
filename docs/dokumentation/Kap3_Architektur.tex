@@ -10,13 +10,13 @@
 CardSiege besitzt zu jedem Zeitpunkt genau einen definierten Spielzustand.
 Turmlisten, Ressourcenzähler, aktive Phase und Ereignisbus müssen konsistent
 von einer einzigen Stelle verwaltet werden, weil alle Teilsysteme auf denselben
-Zustand angewiesen sind: Die \texttt{AttackStrategy} liest Gegnerpositionen,
+Zustand angewiesen sind. Die \texttt{AttackStrategy} liest Gegnerpositionen,
 Phasenklassen wechseln Ressourcen, Karten modifizieren Türme. Würden mehrere
 \texttt{GameManager}-Instanzen existieren, könnten Türme in einer Instanz
 registriert, Gegner aber in einer anderen verwaltet werden, das Spiel wäre
 nicht mehr deterministisch steuerbar.
 
-Der \texttt{GameManager} wird deshalb als Singleton umgesetzt: Ein privater
+Der \texttt{GameManager} wird deshalb als Singleton umgesetzt. Ein privater
 Konstruktor verhindert externe Instanziierung, die einzige Instanz ist als
 statische Klassenvariable deklariert und über \texttt{get()} abrufbar. Im
 privaten Konstruktor wird sofort der \texttt{GameEventLogger} am
@@ -56,8 +56,8 @@ Das Interface \texttt{CardFactory} definiert eine einzige Methode
 Das \texttt{Deck} kennt ausschließlich dieses Interface, nie eine konkrete
 Kartenklasse. Die gesamte Entscheidung darüber, welche Karten mit welchen
 Parametern im Deck landen, liegt in der konkreten Implementierung
-\texttt{StrategyCardFactory}. Diese bestückt das Deck mit zehn Kartentypen: drei
-Turmkarten (Scout, Sniper, Rapid) mit ihren jeweiligen Strategie-Kombinationen
+\texttt{StrategyCardFactory}. Diese bestückt das Deck mit zehn Kartentypen --
+drei Turmkarten (Scout, Sniper, Rapid) mit ihren jeweiligen Strategie-Kombinationen
 sowie sieben Karten für Ressourcen, Buffs und Sondereffekte. Ein alternativer
 Kartensatz für einen anderen Schwierigkeitsgrad oder ein Tutorial ließe sich
 vollständig durch eine neue \texttt{CardFactory}-Implementierung einführen, ohne
@@ -79,7 +79,7 @@ private void refill() {
 \end{lstlisting}
 
 Das unmittelbare Zusammenspiel mit dem Prototype-Pattern ist an dieser Stelle
-besonders deutlich: Die Factory liefert konfigurierte Prototypen, das Deck klont
+besonders deutlich. Die Factory liefert konfigurierte Prototypen, das Deck klont
 jeden zweimal, um zwanzig Karten zu erhalten. Weder Deck noch Factory wissen
 voneinander, wie die Objekte intern konstruiert sind.
 
@@ -88,8 +88,8 @@ voneinander, wie die Objekte intern konstruiert sind.
 % =============================================================================
 
 Das Prototype-Pattern adressiert in CardSiege dasselbe konzeptionelle Problem an
-zwei verschiedenen Stellen: Konfigurierte Objekte sollen geklont werden, anstatt
-ihre Parameter bei jeder Erzeugung erneut angeben zu müssen. Ohne Prototype
+zwei verschiedenen Stellen. In beiden Fällen sollen konfigurierte Objekte geklont
+werden, anstatt ihre Parameter bei jeder Erzeugung erneut angeben zu müssen. Ohne Prototype
 müsste die Konfiguration, etwa Geschwindigkeit und Trefferpunkte eines
 Gegnertyps, an jeder Spawn-Stelle im Code wiederholt werden, was zu
 Inkonsistenzen führen und Änderungen aufwändig machen würde.
@@ -118,23 +118,21 @@ manager.spawnEnemy(selectPrototype(index).copy(manager.getBoard().getPath()));
 
 Dass dasselbe Pattern an zwei unabhängigen Stellen eingesetzt wird, illustriert
 seine Vielseitigkeit. In beiden Fällen liegt der Kern des Problems nicht in der
-Erzeugung an sich, sondern in der zentralen Verwaltung von Konfiguration: Es
-soll eine einzige, verlässliche Quelle der Wahrheit für die Eigenschaften eines
-Objekttyps geben.
+Erzeugung an sich, sondern in der zentralen Verwaltung von Konfiguration -- es soll eine einzige,
+verlässliche Quelle der Wahrheit für die Eigenschaften eines Objekttyps geben.
 
 % =============================================================================
 \subsection{Builder - PendingTower}
 % =============================================================================
 
-Wenn der Spieler eine Turmkarte ausspielt, ist zu diesem Zeitpunkt ein
-wesentlicher Parameter noch unbekannt: die Gitterkoordinaten, auf denen der
-Turm platziert werden soll. Der Spieler muss erst auf ein gültiges Spielfeld-Feld
-klicken. Eine direkte Erzeugung des Turms beim Kartenspielen ist damit nicht
-möglich, der Bauprozess ist zwingend zweistufig.
+Wenn der Spieler eine Turmkarte ausspielt, sind die Gitterkoordinaten des
+Zielfelds noch unbekannt -- erst der nachfolgende Klick legt fest, wo der Turm
+steht. Eine direkte Erzeugung beim Kartenspielen ist damit nicht möglich, der
+Bauprozess ist zwingend zweistufig.
 
 Das Builder-Pattern trennt deshalb die Konfiguration des Turms von seiner
 Instanziierung. Wenn eine \texttt{BuildTowerCard} ausgespielt wird, erzeugt sie
-einen \texttt{PendingTower}, der alle bereits bekannten Parameter speichert:
+einen \texttt{PendingTower}, der alle bereits bekannten Parameter speichert --
 Name, Typ, Kosten, Basisschaden, Reichweite, Cooldown sowie die gewählten
 Targeting- und Angriffsstrategien. Ein \texttt{BaseTower} wird zu diesem
 Zeitpunkt noch nicht erzeugt. Erst wenn der Spieler auf ein gültiges Feld
@@ -153,7 +151,7 @@ public TowerComponent build(int gridX, int gridY) {
 \end{lstlisting}
 
 Diese Trennung hat einen praktischen Nebennutzen, der direkt aus der
-Architekturentscheidung erwächst: Solange ein \texttt{PendingTower} aktiv ist,
+Architekturentscheidung erwächst. Solange ein \texttt{PendingTower} aktiv ist,
 rendert der \texttt{GameScreen} einen Platzierungsmarker mit Reichweitenkreis
 auf dem Spielfeld. Der Spieler sieht visuell, welchen Bereich der Turm abdecken
 würde, bevor er die endgültige Entscheidung trifft, ohne dass dafür ein echter
@@ -166,16 +164,15 @@ sauberere Objekterzeugung, sondern ermöglicht direkt ein UI-Feature.
 
 Das Decorator-Pattern ist die architektonisch prägendste Entscheidung im Projekt,
 weil sie ihren Nutzen im direkten Vergleich zur Alternative am deutlichsten
-demonstriert. Türme sollen zur Laufzeit mit Boni ausgestattet werden können:
-Eine Buff-Karte erhöht den Schaden aller Türme, eine andere erhöht die Reichweite
-eines einzelnen Turms, ein Upgrade verbessert Level, Schaden und Cooldown
-gleichzeitig. Diese Boni können in beliebiger Reihenfolge und Kombination
+demonstriert. Türme sollen zur Laufzeit mit Boni ausgestattet werden können. Eine Buff-Karte
+erhöht den Schaden aller Türme, eine andere erhöht die Reichweite eines einzelnen
+Turms, ein Upgrade verbessert Level, Schaden und Cooldown gleichzeitig. Diese Boni können in beliebiger Reihenfolge und Kombination
 auf einen Turm angewendet werden.
 
-Die naheliegende Alternative wäre Vererbung: Für jede mögliche Kombination aus
-Turmtyp und Buffzustand eine eigene Klasse. Mit drei Turmtypen und drei Bufftypen
+Die naheliegende Alternative wäre für jede mögliche Kombination aus Turmtyp und
+Buffzustand eine eigene Klasse durch Vererbung. Mit drei Turmtypen und drei Bufftypen
 wären das bereits 24 Klassen, die bei jedem neuen Bufftyp weiter explodieren.
-Das Decorator-Pattern löst dieses Problem fundamental anders: Alle Türme und alle
+Das Decorator-Pattern löst dieses Problem fundamental anders. Alle Türme und alle
 Dekoratoren implementieren dasselbe Interface \texttt{TowerComponent}. Die
 abstrakte Klasse \texttt{TowerDecorator} hält eine Referenz auf ein inneres
 \texttt{TowerComponent} und delegiert alle Methoden per Default daran. Konkrete
@@ -219,15 +216,14 @@ ergänzen.
 Das Command-Pattern kapselt jede Spielaktion als eigenständiges Objekt. Die
 abstrakte Basisklasse \texttt{Card} definiert das Command-Interface mit der
 Methode \texttt{execute(CardContext)}. Jede konkrete Kartenklasse ist ein
-ConcreteCommand: Sie kennt ausschließlich ihren eigenen Parameter, etwa den
-Schadenswert oder die Langsamdauer, und delegiert die Ausführung vollständig
-an den Receiver.
+ConcreteCommand, das ausschließlich seinen eigenen Parameter kennt --
+etwa Schadenswert oder Langsamdauer -- und die Ausführung vollständig
+an den Receiver delegiert.
 
-Der \texttt{GameManager} übernimmt die Receiver-Rolle. Er stellt für jede
-Spielaktion eine semantisch benannte Methode bereit:
+Der \texttt{GameManager} übernimmt die Receiver-Rolle. Methoden wie
 \texttt{apply\-Damage\-Buff()}, \texttt{queue\-Range\-Buff()} und
-\texttt{slow\-All\-Enemies()} kapseln die jeweilige Implementierungslogik, etwa
-die Konstruktion von Decorator-Objekten oder die Iteration über die
+\texttt{slow\-All\-Enemies()} kapseln dabei die jeweilige Implementierungslogik --
+etwa die Konstruktion von Decorator-Objekten oder die Iteration über die
 Gegnerliste. Die Karten wissen \textit{was} ausgelöst werden soll, der
 \texttt{GameManager} weiß \textit{wie} es intern umgesetzt wird.
 
@@ -243,16 +239,16 @@ public void applyDamageBuff(int bonusDamage) {
 }
 \end{lstlisting}
 
-Der \texttt{GameScreen} agiert als Invoker: Er ruft \texttt{playCard(index)}
+Der \texttt{GameScreen} agiert als Invoker und ruft \texttt{playCard(index)}
 auf dem \texttt{GameManager} auf, ohne konkrete Kartentypen zu kennen.
-Die acht Kartenklassen, \texttt{Damage\-Buff\-Card}, \texttt{Range\-Buff\-Card},
+Alle acht Kartenklassen -- \texttt{Damage\-Buff\-Card}, \texttt{Range\-Buff\-Card},
 \texttt{FreezeCard}, \texttt{EnergyCard}, \texttt{GoldCard}, \texttt{DrawCard},
-\texttt{DiscountCard} und \texttt{Build\-Tower\-Card}, sind alle nach demselben
-Prinzip aufgebaut: ein schlankes Aktionsobjekt, ein Receiver-Aufruf.
+\texttt{DiscountCard} und \texttt{Build\-Tower\-Card} -- folgen demselben
+Prinzip aus schlankem Aktionsobjekt und einem einzigen Receiver-Aufruf.
 
-Das Command-Pattern kooperiert eng mit dem Decorator-Pattern:
-\texttt{applyDamageBuff()} und \texttt{queueRangeBuff()} sind die einzigen
-Stellen im System, an denen Decorator-Objekte erzeugt werden. Die Karten
+Das Command-Pattern und das Decorator-Pattern sind an dieser Stelle eng
+verzahnt. \texttt{apply\-Damage\-Buff()} und \texttt{queue\-Range\-Buff()} sind
+die einzigen Stellen im System, an denen Decorator-Objekte erzeugt werden. Die Karten
 kennen \textit{dass} ein Buff stattfindet, nicht \textit{wie} er durch
 gestapelte Wrapper realisiert wird. Eine \texttt{undo()}-Methode auf dem
 Command-Interface ist nicht implementiert, da Decorator-Ketten nicht trivial
@@ -262,9 +258,9 @@ rückgängig gemacht werden können.
 \subsection{Strategy - Zielwahl und Angriffsverhalten}
 % =============================================================================
 
-Turmtypen unterscheiden sich in zwei voneinander unabhängigen Dimensionen:
-\textit{wen} sie angreifen (Zielwahl) und \textit{wie} sie angreifen
-(Angriffstyp). Scout und Sniper verwenden Einzelschuss, Rapid verteilt
+Turmtypen unterscheiden sich in zwei voneinander unabhängigen Dimensionen --
+der Zielwahl (\textit{wen} angreifen) und dem Angriffstyp (\textit{wie}
+angreifen). Scout und Sniper verwenden Einzelschuss, Rapid verteilt
 Flächenschaden. Scout priorisiert den Gegner mit dem größten Fortschritt auf dem
 Pfad, Sniper den mit den meisten Lebenspunkten. Diese Dimensionen sind
 orthogonal, jede Kombination ist denkbar und sinnvoll einsetzbar.
@@ -275,7 +271,7 @@ oder jeder neuen Angriffsvariante die Turmklasse geändert werden. Das verletzt
 das Single-Responsibility Principle und führt zu wachsenden, schwer lesbaren
 Klassen.
 
-Das Strategy-Pattern trennt die beiden Dimensionen in zwei Interfaces:
+Das Strategy-Pattern trennt diese Dimensionen in zwei eigenständige Interfaces.
 \texttt{TargetingStrategy} kapselt die Zielwahl, \texttt{AttackStrategy} die
 Angriffsausführung. Jeder Turm erhält bei seiner Erzeugung durch die
 \texttt{StrategyCardFactory} eine konkrete Kombination beider Strategien und
@@ -290,7 +286,7 @@ zusätzliche Klasse.
     \label{fig:strategy}
 \end{figure}
 
-Das Zusammenspiel mit dem Decorator-Pattern ist besonders subtil: Wenn die
+Das Zusammenspiel mit dem Decorator-Pattern ist besonders subtil. Wenn die
 \texttt{Splash\-Attack\-Strategy} \texttt{tower.getDamage()} aufruft, traversiert
 dieser Aufruf transparent eine möglicherweise mehrschichtige Decorator-Kette.
 Die Strategie erhält stets den kumulierten, gebufften Schadenswert, ohne davon
@@ -301,30 +297,29 @@ zu wissen. Die Entkopplung funktioniert vollständig über das gemeinsame Interf
 \subsection{State - Spielphasenzyklus}
 % =============================================================================
 
-Der Spielablauf gliedert sich in einen geschlossenen Viererzyklus:
-\textit{Draw} $\rightarrow$ \textit{Play} $\rightarrow$ \textit{Wave}
-$\rightarrow$ \textit{Resolve} $\rightarrow$ \textit{Draw} $\rightarrow$ \ldots\
-Jede Phase bringt eigene Regeln mit: In der Draw-Phase werden Karten gezogen und
-Energie aufgefüllt, in der Play-Phase spielt der Spieler Karten aus und
-positioniert Türme, in der Wave-Phase läuft die Gegnerwelle während Buff-Karten
-weiterhin einsetzbar sind, und die Resolve-Phase leitet nach kurzem Delay den
-nächsten Zug ein. Zwölf abgeschlossene Wellen führen zum Sieg, fehlende
+Der Spielablauf folgt einem geschlossenen Viererzyklus -- \textit{Draw}
+$\rightarrow$ \textit{Play} $\rightarrow$ \textit{Wave} $\rightarrow$
+\textit{Resolve} -- der sich nach jeder abgeschlossenen Welle wiederholt.
+Die Draw-Phase zieht Karten und füllt Energie auf, die Play-Phase dient dem
+Ausspielen von Karten und der Turmplatzierung, in der Wave-Phase läuft die
+Gegnerwelle während Buff-Karten weiterhin einsetzbar sind, und die
+Resolve-Phase leitet nach kurzem Delay den nächsten Zug ein. Zwölf abgeschlossene Wellen führen zum Sieg, fehlende
 Basislebenspunkte zur Niederlage.
 
 Ohne das State-Pattern würde der \texttt{GameManager} ein wachsendes Geflecht
-aus phasen\-abhängigen Bedingungen verwalten: Karten dürfen nur in bestimmten
-Phasen ausgespielt werden, Gegner spawnen nur in der Wave-Phase, der nächste Zug
-beginnt erst nach Ablauf eines Timers. All dieses Verhalten in einer einzigen
+aus phasen\-abhängigen Bedingungen verwalten. Karten sind nur in bestimmten
+Phasen spielbar, Gegner spawnen ausschließlich in der Wave-Phase, und der
+nächste Zug beginnt erst nach Ablauf eines Timers. All dieses Verhalten in einer einzigen
 Klasse zu konzentrieren würde zu unübersichtlichen
 \texttt{if~(currentPhase~==~...)}-Ketten führen, die mit jeder neuen Phase
 schwerer wartbar werden.
 
 Das State-Pattern kapselt das Verhalten jeder Phase vollständig in einer eigenen
-Klasse, die das Interface \texttt{GamePhase} implementiert. Dieses schreibt drei
-Methoden vor: \texttt{getName()} liefert den Phasennamen, \texttt{enter()} wird
-einmalig beim Betreten der Phase aufgerufen und enthält Initialisierungslogik,
-\texttt{update()} wird in jedem Frame aufgerufen und enthält das laufende
-Verhalten. Der \texttt{GameManager} kennt keine Phasenlogik, er ruft lediglich
+Klasse, die das Interface \texttt{GamePhase} implementiert. Das Interface
+schreibt drei Methoden vor. \texttt{getName()} liefert den Phasennamen für
+Events und UI. \texttt{enter()} enthält Initialisierungslogik und wird einmalig
+beim Phasenwechsel aufgerufen. \texttt{update()} läuft jeden Frame und enthält
+das laufende Verhalten. Der \texttt{GameManager} kennt keine Phasenlogik, er ruft lediglich
 \texttt{phase.update()} auf und wechselt die Phase auf Anforderung.
 
 \begin{lstlisting}[caption={Phasenwechsel im GameManager und Beispielphase},label=lst:state]
@@ -358,12 +353,12 @@ ausschließlich auf externe Nutzerinteraktion wartet, der Übergang in die
 \texttt{WavePhase} wird vom \texttt{GameScreen} ausgelöst. Die
 \texttt{ResolvePhase} verwaltet einen internen Timer und löst nach 0,8~Sekunden
 selbstständig den nächsten Zug aus. Die \texttt{GameOverPhase} schließlich
-bleibt in beiden Methoden leer: Das Spiel ist eingefroren, kein automatischer
-Übergang findet statt. Dass jede Phase exakt die Methoden füllt, die sie
+bleibt in beiden Methoden leer, denn das Spiel ist eingefroren und kein
+automatischer Übergang findet statt. Dass jede Phase exakt die Methoden füllt, die sie
 braucht, und alle anderen leer lässt, macht das phasenspezifische Verhalten
 auf einen Blick sichtbar.
 
-Das State-Pattern kooperiert unmittelbar mit dem Observer-Pattern: Jeder Aufruf
+Das State-Pattern kooperiert unmittelbar mit dem Observer-Pattern. Jeder Aufruf
 von \texttt{switchPhase()} publiziert automatisch ein \texttt{PhaseChanged}-Event
 über den \texttt{GameEventBus}, ohne dass die aufrufende Phase davon wissen muss.
 
@@ -371,23 +366,23 @@ von \texttt{switchPhase()} publiziert automatisch ein \texttt{PhaseChanged}-Even
 \subsection{Observer - GameEventBus}
 % =============================================================================
 
-Im Spielverlauf entstehen kontinuierlich bedeutsame Ereignisse: Ein Turm wird
-gebaut, ein Gegner besiegt, eine Phase wechselt, die Basis erleidet Schaden.
+Im Spielverlauf entstehen kontinuierlich bedeutsame Ereignisse -- gebaute Türme,
+besiegte Gegner, Phasenwechsel, Basisschaden.
 Systeme wie ein Logger, ein Sound-Modul oder ein Statistik-Tracker sollen auf
 diese Ereignisse reagieren, ohne dass der \texttt{GameManager} direkte
 Abhängigkeiten zu ihnen aufbaut. Würde der Manager Logger oder UI direkt
-referenzieren, entstünde enge Kopplung: Jede neue reaktive Komponente würde
+referenzieren, entstünde enge Kopplung, denn jede neue reaktive Komponente würde
 Manager-Code erzwingen und die Klasse weiter aufblähen.
 
 Das Observer-Pattern kehrt diese Abhängigkeit um. Der \texttt{GameEventBus}
 verwaltet eine Liste von \texttt{GameEventListener}-Implementierungen und
 benachrichtigt sie synchron bei jedem publizierten Ereignis. Die Abhängigkeit
-zeigt nun in die entgegengesetzte Richtung: Nicht der Manager kennt den Logger,
-sondern der Logger registriert sich selbst am Manager, zur Initialisierungszeit,
+zeigt nun in die entgegengesetzte Richtung. Nicht der Manager kennt den Logger,
+sondern der Logger registriert sich selbst am Manager -- zur Initialisierungszeit,
 im privaten Singleton-Konstruktor.
 
 Statt einfacher String-Konstanten verwendet das System typisierte Factory-Methoden
-auf der \texttt{GameEvent}-Klasse: \texttt{GameEvent.towerBuilt(x,~y)},
+auf der \texttt{GameEvent}-Klasse, etwa \texttt{GameEvent.towerBuilt(x,~y)},
 \texttt{GameEvent.phaseChanged(name)} oder \texttt{GameEvent.baseDamaged(hp)}.
 Diese Methoden konstruieren Events auf lesbare Weise und verhindern die Streuung
 von Magic-Strings über die Codebasis. Gleichzeitig bleibt \texttt{GameEvent}
@@ -396,7 +391,7 @@ alle nötigen Informationen.
 
 Aktuell ist der \texttt{GameEventLogger} der einzige Subscriber; er schreibt
 jedes Ereignis auf die Konsole und macht den Spielverlauf nachvollziehbar. Die
-Architektur ist dabei bereits für Erweiterungen offen: Ein Achievement-System,
+Architektur ist dabei bereits für Erweiterungen offen. Ein Achievement-System,
 ein Sound-Manager oder ein Replay-Recorder könnten sich mit einem einzigen
 \texttt{eventBus.subscribe()}-Aufruf registrieren, ohne eine Zeile im
 \texttt{GameManager} oder in bestehenden Listenern zu ändern. Das
