@@ -1,0 +1,109 @@
+% =============================================================================
+% Kapitel 4 -- Implementierung: Relevante Funktionen
+% =============================================================================
+\section{Implementierung}
+
+Dieses Kapitel beschreibt stichpunktartig die zentralen Funktionen und Subsysteme
+von CardSiege. Im Vordergrund steht, was die einzelnen Komponenten leisten, die
+zugrundeliegenden Architektur- und Pattern-Entscheidungen wurden in Kapitel~3
+erläutert.
+
+% -----------------------------------------------------------------------------
+\subsection{Spielzustand und Frame-Loop}
+% -----------------------------------------------------------------------------
+
+Der \texttt{GameManager} verwaltet als zentrales Singleton den gesamten
+Spielzustand und koordiniert alle Subsysteme. \texttt{init(board, cardFactory)}
+setzt alle Zustandsvariablen zurück, initialisiert Deck und Hand und startet mit
+Startressourcen (3 Energie, 5 Gold, 10 Basislebenspunkte) in der
+\texttt{DrawPhase}. Die Frame-Methode \texttt{update(delta)} ruft in fest
+definierter Reihenfolge auf: Phasen-Update, Gegnerbewegung,
+Reichweitenüberwachung, Turm-Update, Kampfauflösung, Entitätenbereinigung und
+Projektilupdates.
+
+\texttt{playCard(index)} entfernt die gewählte Karte aus der Hand, prüft Phase
+und Energieverfügbarkeit, zieht den Energiebetrag ab und ruft
+\texttt{card.execute()} auf. \texttt{BuildTowerCard}s sind während der
+\texttt{WavePhase} gesperrt. \texttt{canPlayCard()} und
+\texttt{getEffectiveEnergyCost()} kapseln alle Voraussetzungsprüfungen
+(Phase, Energie, Gold, vorhandene Türme für Buff-Karten) sowie die Berechnung
+aktiver Kartenrabatte.
+
+% -----------------------------------------------------------------------------
+\subsection{Turmsystem}
+% -----------------------------------------------------------------------------
+
+\texttt{queueTowerPlacement(pending)} speichert einen \texttt{PendingTower},
+sobald ausreichend Gold vorhanden ist; der \texttt{GameScreen} rendert daraufhin
+den Platzierungsmarker mit Reichweitenkreis. \texttt{tryPlacePendingTower(x, y)}
+prüft Baubarkeit des Feldes und ob es bereits belegt ist, bei Erfolg wird
+\texttt{PendingTower.build()} aufgerufen, der Turm zur Liste hinzugefügt und Gold
+abgezogen.
+
+\texttt{upgradeTower(tower)} umhüllt den Turm mit einem
+\texttt{UpgradeDecorator} (+1 Level, +15 Schaden, reduzierter Cooldown); die
+Kosten steigen pro Level (\texttt{2 + tower.getLevel()} Gold). Globale Buffs wie
+\texttt{applyDamageBuff()} ersetzen jeden Turm in der Liste durch einen
+entsprechenden Decorator-Wrapper. Für gezielte Buffs auf einzelne Türme speichert
+\texttt{queueRangeBuff()} einen Factory-Auftrag, den
+\texttt{tryApplyPendingTowerModifier()} beim nächsten vom Spieler ausgewählten
+Turm anwendet.
+
+\texttt{updateRangeObservers()} berechnet pro Turm per Quadratdistanzvergleich,
+welche Gegner aktuell in Reichweite sind, und benachrichtigt den Turm über
+Eintritte und Austritte. \texttt{resolveCombat(delta)} iteriert über alle Türme:
+Bei \texttt{canFire()} wird \texttt{attackStrategy.attack()} aufgerufen, der
+Cooldown zurückgesetzt und ein visuelles Projektil erzeugt.
+
+% -----------------------------------------------------------------------------
+\subsection{Gegnersystem und Kampf}
+% -----------------------------------------------------------------------------
+
+\texttt{Enemy.update(delta)} bewegt den Gegner entlang der vorberechneten
+Wegpunkt-Liste. Der \texttt{pathIndex} steigt, sobald ein Waypoint erreicht ist;
+ein aktiver Slow-Effekt (\texttt{FreezeCard}) skaliert die Geschwindigkeit via
+\texttt{slowFactor} für eine begrenzte Dauer. \texttt{isInRange(tower)} prüft
+die Euklidische Distanz per Quadratvergleich, wobei der Turmursprung in der
+Mitte der Kachel liegt.
+
+Der \texttt{WaveSpawner} konfiguriert pro Welle drei
+\texttt{EnemyPrototype}-Objekte mit skalierten Werten und spawnt Gegner in festen
+Zeitintervallen. Sind alle Gegner gespawnt und die Gegnerliste leer, löst
+\texttt{endWaveIfComplete()} den Übergang in die \texttt{ResolvePhase} oder
+nach zwölf Wellen in die \texttt{GameOverPhase(true)} aus.
+
+\texttt{cleanupEntities()} entfernt tote Gegner (+1 Gold,
+\texttt{EnemyDefeated}-Event) und Gegner, die das Ziel erreicht haben
+($-1$ Basislebenspunkt, \texttt{baseDamaged}-Event). Vor dem Entfernen werden
+alle Turm-Observer über \texttt{removeEnemyFromObservers()} benachrichtigt. Fällt
+\texttt{baseHealth} auf null, wechselt das Spiel in \texttt{GameOverPhase(false)}.
+
+% -----------------------------------------------------------------------------
+\subsection{Kartensystem}
+% -----------------------------------------------------------------------------
+
+\texttt{Deck.draw()} liefert die oberste Karte; ist der Stapel leer, füllt
+\texttt{refill()} ihn über Factory und Prototype-Klonen neu auf und mischt ihn
+anschließend. \texttt{Hand} verwaltet die Handkarten als Liste;
+\texttt{addToFront()} wird beim Zurücklegen einer abgelehnten Karte genutzt.
+
+\texttt{ensureFirstHandHasTower()} garantiert, dass die allererste Hand des
+Spiels mindestens eine \texttt{BuildTowerCard} enthält: Ist keine vorhanden,
+wird die erste Handkarte an den Stapelboden gelegt und der Stapel nach einer
+Turmkarte durchsucht. \texttt{addNextCardDiscount(amount)} realisiert
+Rabatt-Mechaniken der \texttt{DiscountCard}; der Rabatt wird nach dem nächsten
+Kartenspielen auf null zurückgesetzt.
+
+% -----------------------------------------------------------------------------
+\subsection{Ereignissystem}
+% -----------------------------------------------------------------------------
+
+Der \texttt{GameEventBus} verwaltet eine Liste von
+\texttt{GameEventListener}-Implementierungen und benachrichtigt alle Subscriber
+synchron per \texttt{publish()}. \texttt{GameEvent} ist ein einfaches Wertobjekt
+mit typisierten Factory-Methoden (\texttt{towerBuilt(x,y)},
+\texttt{phaseChanged(name)}, \texttt{baseDamaged(hp)}, \texttt{EnemyDefeated},
+\texttt{cardPlayed(name)}), die Magic-Strings im gesamten System vermeiden. Der
+\texttt{GameEventLogger} als einziger aktiver Subscriber schreibt jedes Ereignis
+auf die Konsole; weitere Subscriber (Sound, Achievements) könnten ohne Änderung
+am Bus per \texttt{subscribe()} ergänzt werden.

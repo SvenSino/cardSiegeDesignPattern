@@ -1,0 +1,48 @@
+% =============================================================================
+% Kapitel 5 -- Zusammenfassung und Fazit
+% =============================================================================
+\section{Zusammenfassung und Fazit}
+
+\subsection{Ergebnisse}
+
+CardSiege ist ein vollständiges, spielbares Kartenspiel, das alle funktionalen
+Anforderungen erfüllt und neun GoF-Design-Patterns sinnvoll integriert. Die vier
+Erzeugungsmuster -- Singleton, Factory Method, Prototype und Builder -- strukturieren
+gemeinsam die gesamte Objekterzeugung des Spiels: Der Singleton sichert den
+konsistenten Spielzustand, die Factory entkoppelt das Deck von konkreten
+Kartentypen, das Prototype-Pattern ermöglicht effizientes Klonen konfigurierter
+Objekte, und der Builder trennt Turmkonfiguration von Platzierung. Das
+Decorator-Pattern als einziges Strukturmuster löst das zentrale Erweiterungsproblem
+im Turmsystem. Die vier Verhaltensmuster -- Command, Strategy, State und Observer --
+modellieren das laufende Spielgeschehen so, dass Erweiterungen ohne Modifikation
+bestehender Klassen möglich sind.
+
+\subsection{Erkenntnisse und Grenzen}
+
+Die Arbeit hat gezeigt, dass Design Patterns erst im Kontext eines realen Problems
+ihren vollen Wert entfalten. Das Decorator-Pattern wirkt in der Theorie
+überengineert -- erst das Skizzieren der alternativen Vererbungshierarchie macht
+den konkreten Mehrwert sichtbar. Das Strategy-Pattern reduziert eine potentiell
+komplexe Fallunterscheidung im Turmangriff auf zwei austauschbare Algorithmen,
+die sich ohne Seiteneffekte kombinieren lassen.
+
+Besonders aufschlussreich war das natürliche Zusammenspiel der Patterns: Factory
+und Prototype kooperieren im Deck, State und Observer im Phasenzyklus, Command
+und Decorator im Buff-Kartensystem. Die Patterns verstärken sich gegenseitig --
+keine Lösung ist in sich geschlossen, alle greifen ineinander.
+
+Grenzen wurden ebenfalls sichtbar. Das Singleton erschwert Unit-Tests durch
+persistierenden Zustand. Der \texttt{GameManager} trägt trotz aller Delegation
+noch sehr viele Verantwortlichkeiten; in einem größeren Projekt würde man ihn in
+separate \texttt{CombatManager}- und \texttt{ResourceManager}-Klassen aufteilen.
+
+\subsection{Ausblick}
+
+Das System bietet konkrete Ansatzpunkte für Erweiterungen. Das Command-Pattern
+legt die Grundlage für eine Undo-Funktion: Eine \texttt{undo()}-Methode auf
+\texttt{Card} würde Kartenaktionen rückgängig machbar machen. Das
+Memento-Pattern böte eine elegante Basis für Spielstand-Speicherung. Ein Adapter
+könnte einen externen Pathfinding-Algorithmus wie A* anbinden, ohne das
+\texttt{Board} zu modifizieren. Neue Karten- und Turmtypen hingegen lassen sich
+bereits heute ohne Änderung am Bestand ergänzen -- das direkte Ergebnis
+konsequenter Pattern-Anwendung.

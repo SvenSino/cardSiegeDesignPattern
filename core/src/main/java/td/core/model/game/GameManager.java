@@ -18,6 +18,8 @@ import td.core.model.cards.Hand;
 import td.core.model.towers.PendingTower;
 import td.core.model.phases.PlayPhase;
 import td.core.model.phases.ResolvePhase;
+import td.core.model.towers.DamageBuffDecorator;
+import td.core.model.towers.RangeBuffDecorator;
 import td.core.model.towers.TowerComponent;
 import td.core.model.towers.TowerDecoratorFactory;
 import td.core.model.towers.UpgradeDecorator;
@@ -205,11 +207,25 @@ public class GameManager {
         towers.addAll(updated);
     }
 
+    public void applyDamageBuff(int bonusDamage) {
+        applyTowerModifier(tower -> new DamageBuffDecorator(tower, bonusDamage));
+    }
+
     public void queueTowerModifier(TowerDecoratorFactory factory) {
         if (factory == null) {
             return;
         }
         pendingTowerModifier = factory;
+    }
+
+    public void queueRangeBuff(float bonusRange) {
+        queueTowerModifier(tower -> new RangeBuffDecorator(tower, bonusRange));
+    }
+
+    public void slowAllEnemies(float duration, float slowFactor) {
+        for (Enemy enemy : enemies) {
+            enemy.applySlow(duration, slowFactor);
+        }
     }
 
     public TowerComponent tryApplyPendingTowerModifier(TowerComponent tower) {
@@ -258,10 +274,6 @@ public class GameManager {
 
     public void resetEnergy(int base) {
         energy = base;
-    }
-
-    public void resetGold(int base) {
-        gold = base;
     }
 
     public void switchPhase(GamePhase newPhase) {
@@ -333,10 +345,6 @@ public class GameManager {
         for (TowerComponent tower : towers) {
             tower.onEnemyExitedRange(enemy);
         }
-    }
-
-    public boolean isWaveActive() {
-        return waveSpawner.isActive();
     }
 
     public TowerComponent upgradeTower(TowerComponent tower) {

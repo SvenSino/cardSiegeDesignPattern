@@ -1,6 +1,5 @@
 package td.core.model.cards;
 
-import td.core.model.towers.RangeBuffDecorator;
 public class RangeBuffCard extends Card {
     private final float bonusRange;
 
@@ -11,7 +10,7 @@ public class RangeBuffCard extends Card {
 
     @Override
     public void execute(CardContext context) {
-        context.getManager().queueTowerModifier(tower -> new RangeBuffDecorator(tower, bonusRange));
+        context.getManager().queueRangeBuff(bonusRange);
     }
 
     @Override

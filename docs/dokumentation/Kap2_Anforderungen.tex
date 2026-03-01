@@ -1,0 +1,47 @@
+% =============================================================================
+% Kapitel 2 -- Anforderungen und Pattern-Auswahl
+% =============================================================================
+\section{Anforderungen und Pattern-Auswahl}
+
+Das Spiel erfüllt alle funktionalen Anforderungen: drei Turmtypen (Scout, Sniper,
+Rapid), drei Gegnertypen (Standard, Fast, Tank) mit unterschiedlichen
+Geschwindigkeiten und Trefferpunkten, ein vollständiger Rundenzyklus mit vier
+Phasen sowie zehn verschiedene Kartentypen für Bau, Buffs und Sonderaktionen.
+Grafisch dargestellt wird das Spiel über libGDX mit Spielfeld, HUD und
+Kartenhand. Nicht-funktional wurde auf Modularität und Erweiterbarkeit geachtet:
+Abhängigkeiten verlaufen über Interfaces, neue Karten- oder Turmtypen lassen sich
+ohne Änderung bestehenden Codes ergänzen. Das Spielsystem
+wurde in Java~21 mit libGDX umgesetzt und per Gradle gebaut;
+Lombok reduziert Boilerplate durch \texttt{@Getter}-Annotationen.
+
+Die Auswahl der neun GoF-Patterns folgt direkt aus den Anforderungen -- jedes
+Muster löst ein identifizierbares Entwurfsproblem. Tabelle~\ref{tab:patterns}
+gibt einen Überblick.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llp{7.5cm}}
+\toprule
+\textbf{Pattern} & \textbf{Kategorie} & \textbf{Gelöstes Problem} \\
+\midrule
+Singleton      & Erzeugung & Exakt eine konsistente Spielzustandsinstanz \\
+Factory Method & Erzeugung & Deck kennt keine konkreten Kartentypen \\
+Prototype      & Erzeugung & Konfigurierte Objekte klonen statt neu aufbauen \\
+Builder        & Erzeugung & Turmkonfiguration vor Platzierung trennen \\
+Decorator      & Struktur  & Türme zur Laufzeit stapelbar erweitern \\
+Command        & Verhalten & Kartenaktionen als eigenständige Objekte kapseln \\
+Strategy       & Verhalten & Zielwahl und Angriffstyp unabhängig kombinieren \\
+State          & Verhalten & Phasenverhalten ohne if-else-Ketten verwalten \\
+Observer       & Verhalten & Ereignisse entkoppelt von reaktiven Systemen \\
+\bottomrule
+\end{tabular}
+\caption{Übersicht der neun implementierten GoF-Design-Patterns}
+\label{tab:patterns}
+\end{table}
+
+
+Besonders hervorzuheben ist die Aufteilung in vier Erzeugungsmuster, die gemeinsam
+die gesamte Objekterzeugung des Spiels abdecken, und vier Verhaltensmuster, die
+das laufende Spielgeschehen strukturieren. Das Decorator-Pattern als einziges
+Strukturmuster nimmt dabei eine Sonderrolle ein: Es ist das architektonisch
+prägendste Muster des Projekts und kooperiert eng mit Command und Strategy.

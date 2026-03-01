@@ -1,0 +1,122 @@
+  Was am Code geändert werden müsste:
+
+  Das eigentliche Problem ist, dass die Kartenlogik direkt in execute() steckt statt in einem Receiver zu delegieren. Fix wäre:
+
+  1. Explizite Receiver-Methoden auf GameManager -- die meisten existieren schon halb:
+  // Neu: klare Receiver-Methoden
+  public void applyDamageBuff(int bonus) { ... }
+  public void applyRangeBuff(float bonus) { ... }
+  public void grantEnergy(int amount) { ... }
+  2. Cards nur noch delegieren, keine Logik mehr:
+  public void execute(CardContext ctx) {
+      ctx.getManager().applyDamageBuff(bonusDamage); // fertig
+  }
+
+  Das ist pro Karte ~2-3 Zeilen ändern, 8 Karten, also ~30 Minuten.
+
+  ---
+  Was schwieriger wäre: Undo
+
+  Ohne Undo bleibt Command etwas hohl. Mit Undo:
+  - GameManager braucht einen Command-Stack
+  - Jede Karte braucht undo() -- bei Energie/Gold einfach, bei Decorator-Ketten (Schaden-Buff rückgängig) aufwändiger, weil du dir merken müsstest
+  welche Türme gewrappt wurden
+
+  Das wäre eher 3-4 Stunden und nicht trivial.
+
+  ---
+  Empfehlung:
+
+  Nur die Receiver-Trennung fixen (ohne Undo) -- das macht Command legitim und ist ein Nachmittag Arbeit. In der Doku dann ehrlich schreiben dass
+  Undo bewusst weggelassen wurde und kurz begründen warum (Decorator-Ketten machen State-Rollback komplex). Das ist akademisch sogar stärker als es
+   stillschweigend reinzuschmuggeln.
+
+  Soll ich anfangen?
+
+
+  Jetzt kann ich konkret antworten. Ich geh die drei Methoden einzeln durch.
+
+    ---
+    playCard() (Zeile 103–120)
+
+    Aktuell macht die Methode vier Dinge gleichzeitig:
+    // 1. Phasenvalidierung
+    if (!(phase instanceof PlayPhase) && !(phase instanceof WavePhase)) return;
+    // 2. Karte aus Hand entfernen (bereits Mutation!)
+    Card card = hand.removeAt(index);
+    // 3. canPlayCard() -- Energie/Gold-Check
+    if (!canPlayCard(card)) { hand.addToFront(card); return; } // Rückrollversuch
+    // 4. Ausführung + Side Effects
+    energy -= effectiveCost;
+    card.execute(...);
+    eventBus.publish(...);
+
+    Das Rückrollen der Hand wenn canPlayCard fehlschlägt (hand.addToFront(card)) ist ein klares Zeichen dass Validierung und Mutation hier zu früh
+    vermischt werden. In einem PlayCardCommand wäre canExecute() die einzige Stelle, die all das prüft, bevor irgendetwas mutiert wird. Aufwand: ~45
+    Min.
+
+    ---
+    tryPlacePendingTower() (Zeile 159–178)
+
+    Drei unabhängige Validierungen, dann Mutation:
+    if (pendingTower == null) return false;
+    if (!board.isBuildable(gridX, gridY)) return false;
+    // Tower-Overlap-Check (eigene Loop)
+    for (TowerComponent t : towers) { ... }
+    // Erst jetzt Mutation
+    towers.add(...); gold -= ...;
+
+    Das ist eigentlich schon gut strukturiert -- die Validierungen sind oben, Mutation unten. Das Refactoring in einen PlaceTowerCommand ist hier
+    fast mechanisch. Aufwand: ~20 Min.
+
+    ---
+    upgradeTower() (Zeile 334–349)
+
+    Kleinstes Problem, sauberste Struktur:
+    if (gold < cost) return null; // Validierung
+    gold -= cost;                 // Mutation
+    TowerComponent upgraded = new UpgradeDecorator(...);
+    towers.set(index, upgraded);
+
+    Fast schon eine Command-Implementierung. Aufwand: ~15 Min.
+
+    ---
+    CommandBus dazu: ~30 Min.
+
+    public class CommandBus {
+        public boolean execute(Command command) {
+            if (!command.canExecute()) return false;
+            command.execute();
+            return true;
+        }
+    }
+
+    UI ruft dann nur noch commandBus.execute(new PlayCardCommand(index)) statt GameManager.get().playCard(index).
+
+    ---
+    Gesamtaufwand ohne Undo: ~2 Stunden
+    Mit Undo auf alle drei: ~4 Stunden (Hauptarbeit: Decorator-Zustand für Undo merken)
+
+    Undo bei upgradeTower und placeTower ist simpel -- Gold und Tower-Index merken. Undo bei playCard ist komplexer weil Karten-Effekte wie
+    DamageBuffCard alle Türme modifiziert haben.
+
+
+⏺ Ja und nein — es ist Command, aber in einer abgeschwächten Form. Hier die ehrliche Einschätzung:
+
+  Was passt:
+  - Karten sind eigenständige Objekte, die eine Aktion kapseln ✓
+  - Der Invoker (GameScreen) kennt keine konkreten Kartentypen ✓
+  - Der Receiver (GameManager) ist von der Auslösung entkoppelt ✓
+  - Eigene Parameter werden im Objekt gespeichert (bonusDamage, duration etc.) ✓
+
+  Was nicht passt oder abweicht:
+
+  Das auffälligste: Im Lehrbuch-Command speichert das ConcreteCommand eine Referenz auf den Receiver im Konstruktor und ruft ihn in execute() auf. Hier passiert das Gegenteil — der Receiver wird erst zur Ausführungszeit via CardContext reingereicht. Die Karte kennt den GameManager also nie dauerhaft, sie bekommt
+   ihn kurz für den Aufruf.
+
+  Der größte fehlende Baustein: kein undo(). Der klassische Hauptnutzen von Command ist die Umkehrbarkeit von Aktionen. Hier ist das bewusst weggelassen, was fair ist, aber die Darstellung in der Doku sollte das erwähnen.
+
+  Außerdem: die Karten spielen gleichzeitig noch andere Rollen — sie sind Datenobjekte (Name, Cost, Description) und Prototype-Klone. Das macht sie zu einem Hybrid, nicht zu einem reinen Command.
+
+  Fazit: Es ist eine valide, vereinfachte Command-Variante — die Entkopplung von Invoker und Receiver funktioniert sauber. Aber in der Doku sollte man ehrlich sagen, dass der Receiver per CardContext injiziert wird statt gespeichert zu sein, und dass undo() bewusst fehlt. Der aktuelle Text lässt das so klingen
+  als wäre es ein Lehrbuchbeispiel — das ist es nicht ganz.

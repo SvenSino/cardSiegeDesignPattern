@@ -1,6 +1,5 @@
 package td.core.model.cards;
 
-import td.core.model.towers.DamageBuffDecorator;
 public class DamageBuffCard extends Card {
     private final int bonusDamage;
 
@@ -11,7 +10,7 @@ public class DamageBuffCard extends Card {
 
     @Override
     public void execute(CardContext context) {
-        context.getManager().applyTowerModifier(tower -> new DamageBuffDecorator(tower, bonusDamage));
+        context.getManager().applyDamageBuff(bonusDamage);
     }
 
     @Override

@@ -1,0 +1,36 @@
+% =============================================================================
+% Kapitel 1 -- Einleitung
+% =============================================================================
+\section{Einleitung}
+
+\subsection{Motivation}
+
+Entwurfsmuster sind bewährte Lösungsschablonen für wiederkehrende Probleme in der
+objektorientierten Softwareentwicklung. Das Standardwerk der \textit{Gang of Four}
+(Gamma et al., 1994) hat sie als gemeinsame Sprache für Architekturentscheidungen
+etabliert. Ihr eigentlicher Wert zeigt sich jedoch erst im Kontext eines realen
+Entwurfsproblems, die reine Theorie lässt ihren Nutzen oft abstrakt wirken.
+
+Dieses Projekt setzt neun GoF-Patterns in \textbf{CardSiege} um, einem
+rundenbasierten Kartenspiel mit Tower-Defense-Mechaniken in Java und libGDX.
+Spieleentwicklung ist ein besonders geeignetes Anwendungsgebiet: Spiele verwalten
+komplexe, sich ständig ändernde Zustände, viele Objekte interagieren eng
+miteinander, und Erweiterbarkeit ist von Anfang an gefordert. Jedes eingesetzte
+Pattern löst dabei ein konkretes Architekturproblem, das sich ohne das Muster in
+Kopplung, Codeduplikation oder mangelnder Wartbarkeit niedergeschlagen hätte.
+
+\subsection{Spielkonzept}
+
+Der Spieler verteidigt eine Basis gegen zwölf Gegnerwellen, indem er auf einem
+20$\times$20-Rasterfeld strategisch Türme platziert. Das Besondere liegt im
+kartenbasierten Ressourcensystem: Statt Türme direkt zu kaufen, zieht der Spieler
+zu Beginn jeder Runde drei Karten aus einem gemischten Deck. Diese ermöglichen
+unterschiedliche Aktionen, Turmbau, Attribut-Buffs, Ressourcengewinn oder
+Sondereffekte wie das Verlangsamen von Gegnern.
+
+Jeder Spielzug folgt einem festen Viererzyklus: \textit{Draw} (Karten ziehen,
+Energie auffüllen) $\rightarrow$ \textit{Play} (Karten ausspielen, Türme
+positionieren) $\rightarrow$ \textit{Wave} (Gegnerwelle läuft, Türme greifen
+automatisch an) $\rightarrow$ \textit{Resolve} (kurze Pause, nächster Zug
+beginnt). Das Spiel endet mit Sieg nach zwölf abgewehrten Wellen oder mit
+Niederlage, sobald die Basis auf null Lebenspunkte fällt. 

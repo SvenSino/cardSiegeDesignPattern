@@ -1,0 +1,105 @@
+% =============================================================================
+% CardSiege -- Schriftliche Ausarbeitung
+% Modul: Design Pattern in der OOP
+% Kompiliere mit: lualatex Doku.tex
+% =============================================================================
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[ngerman]{babel}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+
+\usepackage[
+    colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black,
+    pdftitle={CardSiege -- Design Pattern in der OOP},
+    pdfauthor={Sven Sinowcz6ik}
+]{hyperref}
+
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=Java,
+    backgroundcolor=\color{backcolour},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{codegreen},
+    commentstyle=\color{codegray}\itshape,
+    numberstyle=\tiny\color{codegray},
+    numbers=left, numbersep=8pt,
+    breaklines=true, showstringspaces=false,
+    frame=single, framerule=0.5pt, rulecolor=\color{codegray},
+    tabsize=4, captionpos=b,
+    xleftmargin=1.5em, framexleftmargin=1.5em,
+    aboveskip=0.8em, belowskip=0.8em,
+    keepspaces=true, columns=fixed,
+    literate={ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+             {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {ß}{{\ss}}1
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small CardSiege -- Design Pattern in der OOP}
+\fancyhead[R]{\small \textit{[Kurskennung]}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage{microtype}
+\clubpenalty=10000
+\widowpenalty=10000
+
+% =============================================================================
+\begin{document}
+\pagenumbering{Alph}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge\bfseries CardSiege\par}
+    \vspace{0.5cm}
+    {\Large Rundenbasiertes Kartenspiel mit Tower-Defense-Mechaniken\par}
+    \vspace{0.3cm}
+    {\large Implementierung von neun GoF-Design-Patterns in Java/libGDX\par}
+    \vspace{2cm}
+    {\large Schriftliche Ausarbeitung\par}
+    \vspace{0.3cm}
+    {\large im Modul \textbf{Design Pattern in der OOP}\par}
+    \vspace{2cm}
+    \begin{tabular}{rl}
+        \textbf{Autor:}    & Sven Sinowczik (Matr.-Nr. 30422906) \\
+
+        \textbf{Hochschule:} & FH Südwestfalen \\[0.5em]
+        \textbf{Datum:}      & \today \\
+    \end{tabular}
+    \vfill
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic}
+\tableofcontents
+\newpage
+
+\input{Kap1_Einleitung}
+\newpage
+\input{Kap2_Anforderungen}
+\newpage
+\input{Kap3_Architektur}
+\newpage
+\input{Kap4_Implementierung}
+\newpage
+\input{Kap5_Zusammenfassung}
+\newpage
+\input{Erklaerung}
+
+\end{document}

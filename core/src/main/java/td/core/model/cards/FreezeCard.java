@@ -1,6 +1,5 @@
 package td.core.model.cards;
 
-import td.core.model.enemies.Enemy;
 public class FreezeCard extends Card {
     private final float duration;
     private final float slowFactor;
@@ -13,9 +12,7 @@ public class FreezeCard extends Card {
 
     @Override
     public void execute(CardContext context) {
-        for (Enemy enemy : context.getManager().getEnemies()) {
-            enemy.applySlow(duration, slowFactor);
-        }
+        context.getManager().slowAllEnemies(duration, slowFactor);
     }
 
     @Override
