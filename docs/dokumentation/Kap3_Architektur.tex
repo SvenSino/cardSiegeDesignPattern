@@ -3,38 +3,27 @@
 % =============================================================================
 \section{Architektur}
 
-\subsection{Der GameManager als zentraler Koordinator}
-
-Der \texttt{GameManager} ist das Herzstück von CardSiege. Er hält Referenzen auf
-alle wesentlichen Spielobjekte: Spielfeld, Türme, Gegner, Projektile,
-Kartensystem, aktuelle Phase, Ressourcen und den Ereignisbus und orchestriert
-deren Zusammenspiel. Seine zentrale \texttt{update()}-Methode wird einmal pro
-Frame vom \texttt{GameScreen} aufgerufen und koordiniert Gegnerbewegung,
-Reichweitenüberwachung, Kampflogik und das Aufräumen besiegter Einheiten.
-Sämtliche inhaltliche Verantwortung delegiert er dabei an spezialisierte
-Teilsysteme, deren konkrete Umsetzung er nicht kennt. Wie diese Delegation
-architektonisch strukturiert ist, beschreiben die folgenden Abschnitte.
-
 % =============================================================================
 \subsection{Singleton - GameManager}
 % =============================================================================
 
-Ein Tower-Defense-Spiel besitzt zu jedem Zeitpunkt genau einen definierten
-Spielzustand. Turmlisten, Phasenzustand, Ressourcenzähler und der aktive
-Ereignisbus müssen konsistent von einer einzigen Stelle verwaltet werden.
-Würden mehrere \texttt{GameManager}-Instanzen existieren, könnten Türme in einer
-Instanz registriert, Gegner aber in einer anderen verwaltet werden, das Spiel
-wäre nicht mehr deterministisch steuerbar.
+CardSiege besitzt zu jedem Zeitpunkt genau einen definierten Spielzustand.
+Turmlisten, Ressourcenzähler, aktive Phase und Ereignisbus müssen konsistent
+von einer einzigen Stelle verwaltet werden, weil alle Teilsysteme auf denselben
+Zustand angewiesen sind: Die \texttt{AttackStrategy} liest Gegnerpositionen,
+Phasenklassen wechseln Ressourcen, Karten modifizieren Türme. Würden mehrere
+\texttt{GameManager}-Instanzen existieren, könnten Türme in einer Instanz
+registriert, Gegner aber in einer anderen verwaltet werden, das Spiel wäre
+nicht mehr deterministisch steuerbar.
 
-Der \texttt{GameManager} wird deshalb als Singleton mit \textit{Eager
-Initialization} umgesetzt: Die einzige Instanz entsteht als statische
-Klassenvariable beim Klassenladen der JVM, noch bevor irgendein Aufruf von
-\texttt{get()} möglich ist. Ein privater Konstruktor verhindert externe
-Instanziierung vollständig. Diese Variante wurde der lazy Alternative
-(\texttt{if (INSTANCE == null)}) vorgezogen, weil das Spiel single-threaded
-läuft und eine aufwändige Synchronisierung unnötig wäre.
+Der \texttt{GameManager} wird deshalb als Singleton umgesetzt: Ein privater
+Konstruktor verhindert externe Instanziierung, die einzige Instanz ist als
+statische Klassenvariable deklariert und über \texttt{get()} abrufbar. Im
+privaten Konstruktor wird sofort der \texttt{GameEventLogger} am
+\texttt{GameEventBus} registriert, sodass das Observer-System von der ersten
+Spielaktion an aktiv ist.
 
-\begin{lstlisting}[caption={Singleton mit Eager Initialization},label=lst:singleton]
+\begin{lstlisting}[caption={Singleton-Implementierung des GameManagers},label=lst:singleton]
 public class GameManager {
     private static final GameManager INSTANCE = new GameManager();
 
@@ -46,13 +35,10 @@ public class GameManager {
 }
 \end{lstlisting}
 
-Bemerkenswert ist, dass der Konstruktor unmittelbar das Observer-System
-initialisiert: Der \texttt{GameEventLogger} wird bereits im privaten Konstruktor
-am \texttt{GameEventBus} registriert, sodass das Logging-System von der ersten
-Spielaktion an aktiv ist, ohne explizite Initialisierungsreihenfolge nach außen.
-Der bekannte Nachteil erschwerter Unit-Tests durch persistierenden globalen Zustand
-wurde zugunsten der Einfachheit akzeptiert. In einem produktiven Kontext würde man
-den \texttt{GameManager} per Dependency Injection übergeben.
+Der \texttt{GameScreen} ruft \texttt{GameManager.get()} auf und übergibt die
+Referenz einmalig an alle Teilsysteme wie Phasenklassen und Karten, die über
+\texttt{CardContext} darauf zugreifen. Dadurch kennt jede Komponente denselben,
+einzigen Spielzustand, ohne ihn selbst verwalten zu müssen.
 
 % =============================================================================
 \subsection{Factory Method - CardFactory}

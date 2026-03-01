@@ -38,11 +38,21 @@ separate \texttt{CombatManager}- und \texttt{ResourceManager}-Klassen aufteilen.
 
 \subsection{Ausblick}
 
-Das System bietet konkrete Ansatzpunkte für Erweiterungen. Das Command-Pattern
-legt die Grundlage für eine Undo-Funktion: Eine \texttt{undo()}-Methode auf
-\texttt{Card} würde Kartenaktionen rückgängig machbar machen. Das
-Memento-Pattern böte eine elegante Basis für Spielstand-Speicherung. Ein Adapter
-könnte einen externen Pathfinding-Algorithmus wie A* anbinden, ohne das
-\texttt{Board} zu modifizieren. Neue Karten- und Turmtypen hingegen lassen sich
-bereits heute ohne Änderung am Bestand ergänzen -- das direkte Ergebnis
-konsequenter Pattern-Anwendung.
+Das System bietet konkrete Ansatzpunkte für Erweiterungen, die unmittelbar auf
+der bestehenden Architektur aufbauen. Konfigurierbare Decks und ein
+Progressionssystem, bei dem nach und nach neue Karten freigeschaltet werden,
+ließen sich vollständig über das Factory-Pattern realisieren: Jede
+Fortschrittsstufe entspräche einer neuen \texttt{CardFactory}-Implementierung,
+ohne eine Zeile in \texttt{Deck} oder den bestehenden Karten zu ändern. Neue
+Gegner- und Turmtypen sind durch \texttt{EnemyPrototype} beziehungsweise
+\texttt{StrategyCardFactory} bereits architektonisch vorbereitet -- das
+Hinzufügen eines weiteren Eintrags genügt.
+
+Das Command-Pattern legt die Grundlage für eine Undo-Funktion: Eine
+\texttt{undo()}-Methode auf \texttt{Card} würde Kartenaktionen rückgängig
+machbar machen, was gerade für ein Progressionssystem mit begrenzten Ressourcen
+spielerisch wertvoll wäre. Das Memento-Pattern böte eine elegante Basis für
+Spielstand-Speicherung. Ein Endless-Mode schließlich ließe sich mit minimalen
+Eingriffen umsetzen: \texttt{WaveSpawner} und \texttt{GameOverPhase} müssten
+lediglich die feste Wellenobergrenze durch eine unbegrenzte Skalierungslogik
+ersetzen, alle anderen Systeme blieben unverändert.
