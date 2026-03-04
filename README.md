@@ -143,47 +143,6 @@ Das Projekt implementiert **9 GoF Design Patterns**, die direkt aus den Spielmec
 | 8 | **Singleton** | Erzeugung | `GameManager` – zentraler Koordinator mit globalem Zugriff | Türme, Gegner, Karten und Phase müssen konsistent sein. Zwei Instanzen würden widersprüchliche Zustände produzieren |
 | 9 | **Builder** | Erzeugung | `PendingTower` trennt Karten-Spielen (Konfiguration) von Turm-Platzierung (Erstellung) | Zweistufiger Prozess: Karte spielen → Platzierungsmarker; Feld klicken → `build(x,y)` erzeugt den Turm. Validierung (Goldkosten, Gelände) vor dem eigentlichen Bauen |
 
-### Pattern-Interaktionen
-
-Die Stärke liegt nicht in einzelnen Patterns, sondern darin, wie sie ineinandergreifen:
-
-```
-Spieler drückt [1] (Overcharge-Karte)
-        │
-        ▼
-GameManager.playCard(0)                  [Singleton: zentraler Einstieg]
-        │  energy -= cost
-        ▼
-DamageBuffCard.execute(context)          [Command: Karte entscheidet selbst]
-        │
-        ▼
-manager.applyTowerModifier(             [Factory: Lambda als TowerDecoratorFactory]
-    tower -> new DamageBuffDecorator(tower, 1)
-)                                        [Decorator: jeder Turm wird eingehüllt]
-        │
-        ▼
-eventBus.publish(cardPlayed("Overcharge")) [Observer: Logger + weitere Subscriber]
-```
-
-```
-Welle startet → WavePhase.enter()       [State: Phasenwechsel]
-        │
-        ▼
-WaveSpawner.startWave()
-standardPrototype = new EnemyPrototype(STANDARD, speed, hp)
-fastPrototype     = new EnemyPrototype(FAST, ...)    [Prototype: Vorlagen konfigurieren]
-tankPrototype     = new EnemyPrototype(TANK, ...)
-        │
-        │  (alle 0.32–0.75s)
-        ▼
-prototype.copy(board.getPath())          [Prototype: klonen → eigene Pos, HP]
-        │
-        ▼
-tower.getAttackStrategy().attack(tower)  [Strategy: Ziel + Angriffsmodus]
-    ├── TargetingStrategy.selectTarget() [Strategy: ClosestToGoal / HighestHP]
-    └── target.takeDamage(getDamage())   [Decorator: delegiert durch alle Hüllen]
-```
-
 ---
 
 ## Paketstruktur
@@ -320,3 +279,6 @@ Das Projekt besteht aus zwei Modulen:
 | `lwjgl3/` | Desktop-Launcher, startet libGDX mit LWJGL3-Backend |
 
 Der Einstiegspunkt ist `td.lwjgl3.Lwjgl3Launcher`. Das Spielfenster öffnet sich mit 1200×700 Pixeln.
+
+
+--------------------

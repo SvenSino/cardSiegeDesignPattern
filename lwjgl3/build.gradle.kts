@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 val gdxVersion = "1.12.1"
 
 plugins {
@@ -15,5 +17,7 @@ application {
 }
 
 tasks.named<JavaExec>("run") {
-    jvmArgs("-XstartOnFirstThread")
+    if (OperatingSystem.current().isMacOsX) {
+        jvmArgs("-XstartOnFirstThread")
+    }
 }

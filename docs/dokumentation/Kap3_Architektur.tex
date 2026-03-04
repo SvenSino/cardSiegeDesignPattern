@@ -248,9 +248,8 @@ Prinzip aus schlankem Aktionsobjekt und einem einzigen Receiver-Aufruf.
 
 Das Command-Pattern und das Decorator-Pattern sind an dieser Stelle eng
 verzahnt. \texttt{apply\-Damage\-Buff()} und \texttt{queue\-Range\-Buff()} sind
-die einzigen Stellen im System, an denen Decorator-Objekte erzeugt werden. Die Karten
-kennen \textit{dass} ein Buff stattfindet, nicht \textit{wie} er durch
-gestapelte Wrapper realisiert wird. Eine \texttt{undo()}-Methode auf dem
+die einzigen Stellen im System, an denen Decorator-Objekte erzeugt werden. Die Karten lösen den Buff aus,
+ohne zu wissen, wie er durch die Decorator-Kette realisiert wird. Eine \texttt{undo()}-Methode auf dem
 Command-Interface ist nicht implementiert, da Decorator-Ketten nicht trivial
 rückgängig gemacht werden können.
 
@@ -271,8 +270,8 @@ oder jeder neuen Angriffsvariante die Turmklasse geändert werden. Das verletzt
 das Single-Responsibility Principle und führt zu wachsenden, schwer lesbaren
 Klassen.
 
-Das Strategy-Pattern trennt diese Dimensionen in zwei eigenständige Interfaces.
-\texttt{TargetingStrategy} kapselt die Zielwahl, \texttt{AttackStrategy} die
+Das Strategy-Pattern trennt diese Dimensionen in zwei eigenständige Interfaces --
+\texttt{Targeting-Strategy} für die Zielwahl, \texttt{AttackStrategy} für die
 Angriffsausführung. Jeder Turm erhält bei seiner Erzeugung durch die
 \texttt{StrategyCardFactory} eine konkrete Kombination beider Strategien und
 delegiert beim Feuern vollständig an sie. Die vier möglichen Kombinationen
@@ -290,8 +289,8 @@ Das Zusammenspiel mit dem Decorator-Pattern ist besonders subtil. Wenn die
 \texttt{Splash\-Attack\-Strategy} \texttt{tower.getDamage()} aufruft, traversiert
 dieser Aufruf transparent eine möglicherweise mehrschichtige Decorator-Kette.
 Die Strategie erhält stets den kumulierten, gebufften Schadenswert, ohne davon
-zu wissen. Die Entkopplung funktioniert vollständig über das gemeinsame Interface
-\texttt{TowerComponent}.
+zu wissen. Möglich ist das, weil Strategy und Decorator dasselbe Interface
+\texttt{TowerComponent} teilen.
 
 % =============================================================================
 \subsection{State - Spielphasenzyklus}
@@ -382,8 +381,8 @@ sondern der Logger registriert sich selbst am Manager -- zur Initialisierungszei
 im privaten Singleton-Konstruktor.
 
 Statt einfacher String-Konstanten verwendet das System typisierte Factory-Methoden
-auf der \texttt{GameEvent}-Klasse, etwa \texttt{GameEvent.towerBuilt(x,~y)},
-\texttt{GameEvent.phaseChanged(name)} oder \texttt{GameEvent.baseDamaged(hp)}.
+auf der \texttt{GameEvent}-Klasse, etwa \texttt{towerBuilt(x,~y)},
+\texttt{phaseChanged(name)} oder \texttt{baseDamaged(hp)}.
 Diese Methoden konstruieren Events auf lesbare Weise und verhindern die Streuung
 von Magic-Strings über die Codebasis. Gleichzeitig bleibt \texttt{GameEvent}
 ein einfaches Wertobjekt ohne Vererbungshierarchie, der Ereignisname trägt
