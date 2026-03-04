@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +15,13 @@ public class SplashAttackStrategy implements AttackStrategy {
     }
 
     @Override
-    public Enemy attack(TowerComponent tower) {
-        List<Enemy> inRange = new ArrayList<>(tower.getEnemiesInRange());
+    public EnemyComponent attack(TowerComponent tower) {
+        List<EnemyComponent> inRange = new ArrayList<>(tower.getEnemiesInRange());
         if (inRange.isEmpty()) {
             return null;
         }
 
-        Enemy primary = tower.getTargetingStrategy().selectTarget(tower, inRange);
+        EnemyComponent primary = tower.getTargetingStrategy().selectTarget(tower, inRange);
         if (primary == null) {
             return null;
         }
@@ -30,14 +30,14 @@ public class SplashAttackStrategy implements AttackStrategy {
         int splashDamage = Math.max(1, Math.round(tower.getDamage() * splashFactor));
         float radiusSq = splashRadius * splashRadius;
 
-        for (Enemy enemy : inRange) {
-            if (enemy == primary) {
+        for (EnemyComponent component : inRange) {
+            if (component == primary) {
                 continue;
             }
-            float dx = enemy.getPosition().x - primary.getPosition().x;
-            float dy = enemy.getPosition().y - primary.getPosition().y;
+            float dx = component.getPosition().x - primary.getPosition().x;
+            float dy = component.getPosition().y - primary.getPosition().y;
             if ((dx * dx + dy * dy) <= radiusSq) {
-                enemy.takeDamage(splashDamage);
+                component.takeDamage(splashDamage);
             }
         }
         return primary;

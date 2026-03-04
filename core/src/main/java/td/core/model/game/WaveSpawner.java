@@ -1,8 +1,12 @@
 package td.core.model.game;
 
 import lombok.Getter;
+import td.core.model.enemies.Enemy;
 import td.core.model.enemies.EnemyPrototype;
+import td.core.model.enemies.EnemySquad;
 import td.core.model.enemies.EnemyType;
+
+import java.util.List;
 
 public class WaveSpawner {
     @Getter
@@ -56,7 +60,16 @@ public class WaveSpawner {
         timer += delta;
         if (timer >= spawnInterval && spawned < totalThisWave) {
             timer = 0f;
-            manager.spawnEnemy(selectPrototypeForIndex(spawned).copy(manager.getBoard().getPath()));
+            if (currentWaveNumber >= 4 && spawned % 7 == 4) {
+                List<com.badlogic.gdx.math.Vector2> path = manager.getBoard().getPath();
+                manager.spawnEnemy(new EnemySquad(List.of(
+                    (Enemy) fastEnemy.copy(path),
+                    (Enemy) fastEnemy.copy(path),
+                    (Enemy) fastEnemy.copy(path)
+                )));
+            } else {
+                manager.spawnEnemy(selectPrototypeForIndex(spawned).copy(manager.getBoard().getPath()));
+            }
             spawned++;
         }
         if (spawned >= totalThisWave) {

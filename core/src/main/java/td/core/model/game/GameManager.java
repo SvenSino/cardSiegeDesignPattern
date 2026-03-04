@@ -8,7 +8,7 @@ import td.core.model.cards.Deck;
 import td.core.model.cards.BuildTowerCard;
 import td.core.model.cards.RangeBuffCard;
 import td.core.model.phases.DrawPhase;
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 import td.core.model.events.GameEvent;
 import td.core.model.events.GameEventBus;
 import td.core.model.events.GameEventLogger;
@@ -47,7 +47,7 @@ public class GameManager {
     private int maxWaves;
     private int nextCardDiscount;
     private final List<TowerComponent> towers = new ArrayList<>();
-    private final List<Enemy> enemies = new ArrayList<>();
+    private final List<EnemyComponent> enemies = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
     private Deck deck;
     private Hand hand;
@@ -89,7 +89,7 @@ public class GameManager {
         }
         phase.update(this, delta);
         waveSpawner.update(this, delta);
-        for (Enemy enemy : enemies) {
+        for (EnemyComponent enemy : enemies) {
             enemy.update(delta);
         }
         updateRangeObservers();
@@ -223,7 +223,7 @@ public class GameManager {
     }
 
     public void slowAllEnemies(float duration, float slowFactor) {
-        for (Enemy enemy : enemies) {
+        for (EnemyComponent enemy : enemies) {
             enemy.applySlow(duration, slowFactor);
         }
     }
@@ -242,7 +242,7 @@ public class GameManager {
         return modifiedTower;
     }
 
-    public void spawnEnemy(Enemy enemy) {
+    public void spawnEnemy(EnemyComponent enemy) {
         enemies.add(enemy);
     }
 
@@ -285,7 +285,7 @@ public class GameManager {
     private void resolveCombat(float delta) {
         for (TowerComponent tower : towers) {
             if (tower.canFire()) {
-                Enemy target = tower.getAttackStrategy().attack(tower);
+                EnemyComponent target = tower.getAttackStrategy().attack(tower);
                 if (target != null) {
                     tower.resetCooldown();
                     spawnProjectile(tower, target);
@@ -298,37 +298,37 @@ public class GameManager {
 
     private void updateRangeObservers() {
         for (TowerComponent tower : towers) {
-            Set<Enemy> currentInRange = new HashSet<>();
-            for (Enemy enemy : enemies) {
-                if (enemy.isInRange(tower)) {
-                    currentInRange.add(enemy);
+            Set<EnemyComponent> currentInRange = new HashSet<>();
+            for (EnemyComponent component : enemies) {
+                if (component.isInRange(tower)) {
+                    currentInRange.add(component);
                 }
             }
 
-            Set<Enemy> previouslyInRange = new HashSet<>(tower.getEnemiesInRange());
-            for (Enemy enemy : currentInRange) {
-                if (!previouslyInRange.contains(enemy)) {
-                    tower.onEnemyEnteredRange(enemy);
+            Set<EnemyComponent> previouslyInRange = new HashSet<>(tower.getEnemiesInRange());
+            for (EnemyComponent component : currentInRange) {
+                if (!previouslyInRange.contains(component)) {
+                    tower.onEnemyEnteredRange(component);
                 }
             }
-            for (Enemy enemy : previouslyInRange) {
-                if (!currentInRange.contains(enemy)) {
-                    tower.onEnemyExitedRange(enemy);
+            for (EnemyComponent component : previouslyInRange) {
+                if (!currentInRange.contains(component)) {
+                    tower.onEnemyExitedRange(component);
                 }
             }
         }
     }
 
     private void cleanupEntities() {
-        enemies.removeIf(enemy -> {
-            if (enemy.isDead()) {
-                removeEnemyFromObservers(enemy);
-                addGold(1);
+        enemies.removeIf(component -> {
+            if (component.isDead()) {
+                removeEnemyFromObservers(component);
+                addGold(component.getGoldValue());
                 eventBus.publish(GameEvent.EnemyDefeated);
                 return true;
             }
-            if (enemy.hasReachedGoal()) {
-                removeEnemyFromObservers(enemy);
+            if (component.hasReachedGoal()) {
+                removeEnemyFromObservers(component);
                 baseHealth -= 1;
                 eventBus.publish(GameEvent.baseDamaged(baseHealth));
                 return true;
@@ -341,9 +341,9 @@ public class GameManager {
         }
     }
 
-    private void removeEnemyFromObservers(Enemy enemy) {
+    private void removeEnemyFromObservers(EnemyComponent component) {
         for (TowerComponent tower : towers) {
-            tower.onEnemyExitedRange(enemy);
+            tower.onEnemyExitedRange(component);
         }
     }
 
@@ -368,7 +368,7 @@ public class GameManager {
         return 2 + tower.getLevel();
     }
 
-    private void spawnProjectile(TowerComponent tower, Enemy target) {
+    private void spawnProjectile(TowerComponent tower, EnemyComponent target) {
         float tileSize = board.getTileSize();
         float fromX = (tower.getGridX() + 0.5f) * tileSize;
         float fromY = (tower.getGridY() + 0.5f) * tileSize;

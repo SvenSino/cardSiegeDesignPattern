@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 
 /**
  * Strategy-Interface für das Angriffsverhalten eines Turms.
@@ -24,5 +24,5 @@ public interface AttackStrategy {
      * @param tower der angreifende Turm
      * @return getroffener Gegner, oder {@code null} wenn kein Ziel verfügbar war
      */
-    Enemy attack(TowerComponent tower);
+    EnemyComponent attack(TowerComponent tower);
 }

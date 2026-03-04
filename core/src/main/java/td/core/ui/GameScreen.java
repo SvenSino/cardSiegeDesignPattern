@@ -4,7 +4,7 @@ import td.core.model.board.Board;
 import td.core.model.cards.Card;
 import td.core.model.cards.BuildTowerCard;
 import td.core.model.towers.DamageBuffDecorator;
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 import td.core.model.game.GameManager;
 import td.core.MainGame;
 import td.core.model.towers.PendingTower;
@@ -144,23 +144,25 @@ public class GameScreen implements Screen {
             }
         }
 
-        for (Enemy enemy : manager.getEnemies()) {
-            shapeRenderer.setColor(enemy.getType().getColor());
-            shapeRenderer.circle(
-                boardOrigin.x + enemy.getPosition().x,
-                boardOrigin.y + enemy.getPosition().y,
-                10f
-            );
+        for (EnemyComponent component : manager.getEnemies()) {
+            for (EnemyComponent leaf : component.getLeaves()) {
+                shapeRenderer.setColor(leaf.getType().getColor());
+                shapeRenderer.circle(
+                    boardOrigin.x + leaf.getPosition().x,
+                    boardOrigin.y + leaf.getPosition().y,
+                    10f
+                );
 
-            float barWidth = 22f;
-            float barHeight = 3f;
-            float hpRatio = Math.max(0f, Math.min(1f, (float) enemy.getHp() / enemy.getMaxHp()));
-            float barX = boardOrigin.x + enemy.getPosition().x - barWidth / 2f;
-            float barY = boardOrigin.y + enemy.getPosition().y + 12f;
-            shapeRenderer.setColor(new Color(0.2f, 0.2f, 0.2f, 1f));
-            shapeRenderer.rect(barX, barY, barWidth, barHeight);
-            shapeRenderer.setColor(new Color(0.2f, 0.85f, 0.2f, 1f));
-            shapeRenderer.rect(barX, barY, barWidth * hpRatio, barHeight);
+                float barWidth = 22f;
+                float barHeight = 3f;
+                float hpRatio = Math.max(0f, Math.min(1f, (float) leaf.getHp() / leaf.getMaxHp()));
+                float barX = boardOrigin.x + leaf.getPosition().x - barWidth / 2f;
+                float barY = boardOrigin.y + leaf.getPosition().y + 12f;
+                shapeRenderer.setColor(new Color(0.2f, 0.2f, 0.2f, 1f));
+                shapeRenderer.rect(barX, barY, barWidth, barHeight);
+                shapeRenderer.setColor(new Color(0.2f, 0.85f, 0.2f, 1f));
+                shapeRenderer.rect(barX, barY, barWidth * hpRatio, barHeight);
+            }
         }
 
         shapeRenderer.end();

@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 import lombok.Getter;
 
 import java.util.Set;
@@ -69,17 +69,17 @@ public abstract class TowerDecorator implements TowerComponent {
     }
 
     @Override
-    public Set<Enemy> getEnemiesInRange() {
+    public Set<EnemyComponent> getEnemiesInRange() {
         return inner.getEnemiesInRange();
     }
 
     @Override
-    public void onEnemyEnteredRange(Enemy enemy) {
+    public void onEnemyEnteredRange(EnemyComponent enemy) {
         inner.onEnemyEnteredRange(enemy);
     }
 
     @Override
-    public void onEnemyExitedRange(Enemy enemy) {
+    public void onEnemyExitedRange(EnemyComponent enemy) {
         inner.onEnemyExitedRange(enemy);
     }
 

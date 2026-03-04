@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 import java.util.List;
 
 /**
@@ -20,5 +20,5 @@ public interface TargetingStrategy {
      * @param enemies alle aktuell im Spiel befindlichen Gegner
      * @return das gewählte Ziel, oder {@code null} wenn keines in Reichweite ist
      */
-    Enemy selectTarget(TowerComponent tower, List<Enemy> enemies);
+    EnemyComponent selectTarget(TowerComponent tower, List<EnemyComponent> enemies);
 }

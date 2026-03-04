@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class Enemy {
+public class Enemy implements EnemyComponent {
     private final EnemyType type;
     private final List<Vector2> path;
     private int pathIndex;
@@ -79,6 +79,16 @@ public class Enemy {
         float dx = position.x - (tower.getGridX() + 0.5f) * GameManager.get().getBoard().getTileSize();
         float dy = position.y - (tower.getGridY() + 0.5f) * GameManager.get().getBoard().getTileSize();
         return (dx * dx + dy * dy) <= tower.getRange() * tower.getRange();
+    }
+
+    @Override
+    public List<EnemyComponent> getLeaves() {
+        return List.of(this);
+    }
+
+    @Override
+    public int getGoldValue() {
+        return 1;
     }
 
 }

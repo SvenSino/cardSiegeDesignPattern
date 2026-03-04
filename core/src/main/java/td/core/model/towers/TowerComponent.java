@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 
 import java.util.Set;
 
@@ -34,13 +34,13 @@ public interface TowerComponent {
     AttackStrategy getAttackStrategy();
 
     /** @return Menge der Gegner, die sich aktuell in Reichweite befinden */
-    Set<Enemy> getEnemiesInRange();
+    Set<EnemyComponent> getEnemiesInRange();
 
     /** Wird vom {@code GameManager} aufgerufen, wenn ein Gegner die Reichweite betritt. */
-    void onEnemyEnteredRange(Enemy enemy);
+    void onEnemyEnteredRange(EnemyComponent enemy);
 
     /** Wird vom {@code GameManager} aufgerufen, wenn ein Gegner die Reichweite verlässt. */
-    void onEnemyExitedRange(Enemy enemy);
+    void onEnemyExitedRange(EnemyComponent enemy);
 
     /** @return {@code true}, wenn der Cooldown abgelaufen ist und der Turm feuern darf */
     boolean canFire();

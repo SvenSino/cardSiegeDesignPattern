@@ -1,6 +1,6 @@
 package td.core.model.towers;
 
-import td.core.model.enemies.Enemy;
+import td.core.model.enemies.EnemyComponent;
 import lombok.Getter;
 
 import java.util.LinkedHashSet;
@@ -18,7 +18,7 @@ public class BaseTower implements TowerComponent {
     private final int cost;
     private final TargetingStrategy targetingStrategy;
     private final AttackStrategy attackStrategy;
-    private final Set<Enemy> enemiesInRange = new LinkedHashSet<>();
+    private final Set<EnemyComponent> enemiesInRange = new LinkedHashSet<>();
 
     private float cooldownTimer;
 
@@ -61,12 +61,12 @@ public class BaseTower implements TowerComponent {
     }
 
     @Override
-    public void onEnemyEnteredRange(Enemy enemy) {
+    public void onEnemyEnteredRange(EnemyComponent enemy) {
         enemiesInRange.add(enemy);
     }
 
     @Override
-    public void onEnemyExitedRange(Enemy enemy) {
+    public void onEnemyExitedRange(EnemyComponent enemy) {
         enemiesInRange.remove(enemy);
     }
 }
