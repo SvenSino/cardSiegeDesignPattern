@@ -1,6 +1,6 @@
 package td.core.model.cards;
 
-public class DiscountCard extends Card {
+public class  DiscountCard extends Card {
     private final int discount;
 
     public DiscountCard(String name, int cost, int discount) {
