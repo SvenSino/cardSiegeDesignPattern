@@ -170,7 +170,7 @@ public class GameManager {
                 return false;
             }
         }
-
+        //Tower wird erstellt
         TowerComponent tower = pendingTower.build(gridX, gridY);
         towers.add(tower);
         pendingTower = null;
